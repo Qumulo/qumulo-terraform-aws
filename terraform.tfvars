@@ -60,6 +60,7 @@ tags = {
 # name                      - Cluster name (2-15 alphanumeric characters). Dash (-) is allowed if not the first or last character. Used as a prefix for AWS resources created for this cluster.
 # node_count                - Number of nodes in the cluster. Valid values: 1 (single node), or 3-24. 1 and 4 not allowed for multi-AZ.
 # deletion_protection       - Causes Terraform to throw an error upon destroy for the Qumulo Cluster resource.  Safegaurd your cluster.  Default = true.  Set to false to destroy.
+# audit_logging             - (OPTIONAL) Send Qumulo audit logs to AWS CloudWatch logs.
 # cluster_version           - (OPTIONAL) Qumulo software version. Defaults to latest. Immutable after creation. Upgrade version via cluster UI/API.
 # floating_ip_count         - (OPTIONAL) Number of floating IPs. Must be 0, or between 3 and 100. Default=12. NOT applicable with multi-AZ deployments.  
 # nexus_registration_key    - (OPTIONAL) Qumulo Nexus registration key for remote support. Obtain from https://nexus.qumulo.com/user/registration-key
@@ -68,13 +69,14 @@ tags = {
 # soft_capacity_limit_tb    - (OPTIONAL) Soft capacity limit in TB (50 to 50000). Default is 500TB. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed.
 
 #-----------REQUIRED-------------------
-  admin_pwd_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
+admin_pwd_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
 cluster_name             = "CNQ-HOT"
 cluster_product_type     = "HOT"
 node_count               = 3
 deletion_protection      = true
 
 #------------OPTIONAL------------------
+audit_logging            = false
 cluster_version          = null
 floating_ip_count        = 12
 nexus_registration_key   = null
@@ -127,18 +129,3 @@ nlb_override_subnet_ids = null
 nlb_provision           = false
 nlb_public              = false
 nlb_stickiness          = true
-
-# ***** OPTIONAL NeuralProtect Module *****
-# ----- Realtime Ransomware Detection with Qumulo NeuralProtect.  Additional charges apply.
-#
-# cluster_dns_name                - DNS Name for the cluster.  Leave null to automatically pickup the QDNS or NLB DNS name.
-#                                   Ignored if using floating IPs without QDNS
-# np_deletion_protection          - Causes Terraform to throw an error upon destroy for the NeuralProtect resource.  Safegaurd your NeuralProtect instance.  Default = true.  Set to false to destroy.
-# np_instance_type                - The EC2 instance type for NeuralProtect
-# np_provision                    - true/false to enable deployment of the NLB.  If the qconfig module senses multi-AZ it will deploy the NLB in the same subnets as the cluster
-# nexus_api_token                 - Qumulo Nexus API token for NeuralProtect.  Required.
-cluster_dns_name       = null
-np_deletion_protection = false
-np_instance_type       = "m6a.xlarge"
-np_provision           = false
-nexus_api_token        = null

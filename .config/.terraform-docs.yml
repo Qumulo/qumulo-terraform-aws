@@ -8,7 +8,7 @@ content: |-
 
   <a target="_blank" href="https://qumulo.com/"><img src="./images/qumulo-scale-anywhere-logo.webp" style="width:150px;height:53px;"></a>
 
-  # Deploying Cloud Native Qumulo (CNQ) on AWS with Terraform [![Latest Release](https://img.shields.io/github/release/qumulo/aws-terraform-cnq.svg)](https://github.com/qumulo/aws-terraform-cloud-next/releases)
+  # Deploying Cloud Native Qumulo (CNQ) on AWS with Terraform [![Latest Release](https://img.shields.io/github/release/qumulo/qumulo-terraform-aws.svg)](https://github.com/qumulo/qumulo-terraform-aws/releases)
   This repository contains Terraform which deploys S3 buckets and a CNQ cluster with 3 or more instances that adhere to the [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/).
   NOTE: as of version 7.0 this Terraform uses the Qumulo AWS Provider.  This greatly simplifies Terraform operations and makes compute elasticity changes even more elegant.  To learn more about the provider read the [provider docs](https://qumulo.github.io/terraform-provider-qumulo-cloud/).
 

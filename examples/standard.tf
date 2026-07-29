@@ -39,6 +39,7 @@ module "cloud_native_qumulo" {
   deletion_protection      = true
 
   #------------OPTIONAL------------------
+  audit_logging            = false
   cluster_version          = null
   floating_ip_count        = 12
   nexus_registration_key   = null

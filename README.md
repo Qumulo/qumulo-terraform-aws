@@ -2,7 +2,9 @@
 
 <a target="_blank" href="https://qumulo.com/"><img src="./images/qumulo-scale-anywhere-logo.webp" style="width:150px;height:53px;"></a>
 
-# Deploying Cloud Native Qumulo (CNQ) on AWS with Terraform [![Latest Release](https://img.shields.io/github/release/qumulo/aws-terraform-cnq.svg)](https://github.com/qumulo/aws-terraform-cloud-next/releases)
+# PRE-PRODUCTION, NOT FOR CUSTOMER USE
+
+# Deploying Cloud Native Qumulo (CNQ) on AWS with Terraform [![Latest Release](https://img.shields.io/github/release/qumulo/qumulo-terraform-aws.svg)](https://github.com/qumulo/qumulo-terraform-aws/releases)
 This repository contains Terraform which deploys S3 buckets and a CNQ cluster with 3 or more instances that adhere to the [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/).
 NOTE: as of version 7.0 this Terraform uses the Qumulo AWS Provider.  This greatly simplifies Terraform operations and makes compute elasticity changes even more elegant.  To learn more about the provider read the [provider docs](https://qumulo.github.io/terraform-provider-qumulo-cloud/).
 
@@ -64,6 +66,7 @@ module "cloud_native_qumulo" {
   deletion_protection      = true
 
   #------------OPTIONAL------------------
+  audit_logging            = true
   cluster_version          = null
   floating_ip_count        = 12
   nexus_registration_key   = null
@@ -101,7 +104,7 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_admin_pwd_or_secrets_arn"></a> [admin\_pwd\_or\_secrets\_arn](#input\_admin\_pwd\_or\_secrets\_arn) | Provide either a plaintext administrator password or an AWS Secrets Manager ARN. | `string` | n/a | yes |
 | <a name="input_allow_cidrs"></a> [allow\_cidrs](#input\_allow\_cidrs) | OPTIONAL: CIDR blocks allowed to access the cluster | `list(string)` | `null` | no |
 | <a name="input_ami_id"></a> [ami\_id](#input\_ami\_id) | OPTIONAL: AMI ID for cluster nodes. If omitted, the default Qumulo AMI (Ubuntu 24.04) is used. Supports Ubuntu and RHEL 8, 9, and 10 AMIs. See aws-custom-images.md for details. | `string` | `null` | no |
-| <a name="input_cluster_dns_name"></a> [cluster\_dns\_name](#input\_cluster\_dns\_name) | OPTIONAL: DNS Name for the cluster.  Leave null to automatically pickup the QDNS or NLB DNS name. | `string` | `null` | no |
+| <a name="input_audit_logging"></a> [audit\_logging](#input\_audit\_logging) | OPTIONAL: Send Qumulo audit logs to AWS CloudWatch logs. | `bool` | `false` | no |
 | <a name="input_cluster_fqdn"></a> [cluster\_fqdn](#input\_cluster\_fqdn) | OPTIONAL: Fully qualified domain name for Qumulo DNS | `string` | `null` | no |
 | <a name="input_cluster_iam_role_arn"></a> [cluster\_iam\_role\_arn](#input\_cluster\_iam\_role\_arn) | OPTIONAL: When set, the provider performs no IAM writes for that role — no creation, policy updates, tagging, or deletion — and instead launches instances with your role's instance profile | `string` | `null` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Cluster name (2-15 alphanumeric characters). Used as a prefix for AWS resources created for this cluster. | `string` | n/a | yes |
@@ -114,7 +117,6 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_floating_ip_count"></a> [floating\_ip\_count](#input\_floating\_ip\_count) | OPTIONAL: Number of floating IPs. Must be 0, or between 3 and 100. NOT applicable with multi-AZ deployments. | `number` | `3` | no |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | EC2 instance type for the cluster. Prefer i7i, i4i, i7ien.  Supported families include m6idn, m6i, m7i, i3en, i4i, i7i, i7ie. | `string` | n/a | yes |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | OPTIONAL: KMS key ARN for encrypting AWS services like EBS and S3 (immutable after creation). Qumulo encrypts all data independent of AWS default or KMS keys. | `string` | `null` | no |
-| <a name="input_nexus_api_token"></a> [nexus\_api\_token](#input\_nexus\_api\_token) | OPTIONAL: Qumulo Nexus API token for NeuralProtect | `string` | `null` | no |
 | <a name="input_nexus_registration_key"></a> [nexus\_registration\_key](#input\_nexus\_registration\_key) | OPTIONAL: Qumulo Nexus registration key for remote support | `string` | `null` | no |
 | <a name="input_nlb_cross_zone"></a> [nlb\_cross\_zone](#input\_nlb\_cross\_zone) | OPTIONAL: AWS NLB Enable cross-AZ load balancing | `bool` | `false` | no |
 | <a name="input_nlb_dns_client_affinity"></a> [nlb\_dns\_client\_affinity](#input\_nlb\_dns\_client\_affinity) | OPTIONAL: AWS NLB DNS Client Routing Policy Zonal Affinity | `string` | `"availability_zone_affinity"` | no |
@@ -124,9 +126,6 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_nlb_stickiness"></a> [nlb\_stickiness](#input\_nlb\_stickiness) | OPTIONAL: AWS NLB sticky sessions | `bool` | `true` | no |
 | <a name="input_node_count"></a> [node\_count](#input\_node\_count) | Number of nodes in the cluster. Valid values: 1 (single node), or 3-24. 1 and 4 not allowed for multi-AZ. | `number` | n/a | yes |
 | <a name="input_node_hooks"></a> [node\_hooks](#input\_node\_hooks) | OPTIONAL: Pre and post userdata hooks for Cluster Nodes. | `map(string)` | `null` | no |
-| <a name="input_np_deletion_protection"></a> [np\_deletion\_protection](#input\_np\_deletion\_protection) | OPTIONAL: Causes Terraform to throw an error upon destroy for the NeuralProtect resource.  Safegaurd your NeuralProtect instance.  Set to false to destroy. | `bool` | `true` | no |
-| <a name="input_np_instance_type"></a> [np\_instance\_type](#input\_np\_instance\_type) | OPTIONAL: NeuralProtect EC2 instance type. | `string` | `"m6a.xlarge"` | no |
-| <a name="input_np_provision"></a> [np\_provision](#input\_np\_provision) | OPTIOINAL: true/false to enable deployment of the NLB.  If the qconfig module senses multi-AZ it will deploy the NLB in the same subnets as the cluster | `bool` | `false` | no |
 | <a name="input_permissions_boundary_arn"></a> [permissions\_boundary\_arn](#input\_permissions\_boundary\_arn) | OPTIONAL: IAM permissions boundary ARN applied to cluster and provisioner roles | `string` | `null` | no |
 | <a name="input_provider_timeout_minutes"></a> [provider\_timeout\_minutes](#input\_provider\_timeout\_minutes) | The total time after which Terraform will abondon the provider deployment of the Qumulo cluster and timeout. In minutes. | `number` | `30` | no |
 | <a name="input_provisioner_ami_id"></a> [provisioner\_ami\_id](#input\_provisioner\_ami\_id) | OPTIONAL: AMI ID for the provisioner instance. Defaults to Ubunti 24.04 AMI. | `string` | `null` | no |
@@ -155,7 +154,6 @@ output "outputs_cloud_native_qumulo" {
 | <a name="output_endpoints"></a> [endpoints](#output\_endpoints) | Connection endpoints for various protocols |
 | <a name="output_primary_ips"></a> [primary\_ips](#output\_primary\_ips) | Per-node primary IPs. Use these directly when no floating IPs are configured, or for per-node access. |
 | <a name="output_soft_capacity_limit_tb"></a> [soft\_capacity\_limit\_tb](#output\_soft\_capacity\_limit\_tb) | Total capacity the cluster may consume.  Only used capacity is billed. |
-| <a name="output_threat_detection_neuralprotect_ip"></a> [threat\_detection\_neuralprotect\_ip](#output\_threat\_detection\_neuralprotect\_ip) | IP address for the NeuralProtect instance |
 
 ---
 

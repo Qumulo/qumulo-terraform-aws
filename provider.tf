@@ -39,8 +39,3 @@ provider "qumulo" {
     # profile   = "my-profile"   # optional, overrides AWS_PROFILE
   }
 }
-
-provider "qumulo" {
-  alias           = "neuralprotect"
-  nexus_api_token = var.nexus_api_token
-}

@@ -50,11 +50,6 @@ output "soft_capacity_limit_tb" {
   value       = qumulo_filesystem_aws.cluster.soft_capacity_limit_tb
 }
 
-output "threat_detection_neuralprotect_ip" {
-  description = "IP address for the NeuralProtect instance"
-  value       = local.provision_np ? module.neuralprotect.neuralprotect_ip : null
-}
-
 output "endpoints" {
   description = "Connection endpoints for various protocols"
   value = {
