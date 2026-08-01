@@ -20,27 +20,19 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 #SOFTWARE.
 
-# If you have configured credentials for the AWS CLI, they should get picked up
-# automatically. You can also:
-# - Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables
-# - If you have multiple profiles configured on your AWS CLI credentials,
-#   override with AWS_PROFILE
-# More information can be found here:
-#   https://registry.terraform.io/providers/hashicorp/aws/latest/docs
 
-provider "aws" {
-  region = var.region
-}
+resource "qumulo_threat_detection_aws" "neuralprotect" {
+  provider = qumulo
 
-provider "qumulo" {
-  aws {
-    # Standard AWS credential chain applies (env vars, shared config, SSO,
-    # instance profile). No credentials block is required here.
-    # profile   = "my-profile"   # optional, overrides AWS_PROFILE
-  }
-}
-
-provider "qumulo" {
-  alias           = "neuralprotect"
-  nexus_api_token = var.nexus_api_token
+  additional_security_group_ids = var.additional_security_group_ids
+  allow_cidrs                   = var.allow_cidrs
+  cluster_admin_password        = var.cluster_admin_password
+  cluster_api_dns_name          = var.cluster_dns_name
+  cluster_reference             = var.cluster_reference
+  deletion_protection           = var.deletion_protection
+  instance_type                 = var.instance_type
+  kms_key_id                    = var.kms_key_id
+  #permissions_boundary_arn      = var.permissions_boundary_arn
+  td_admin_password             = var.cluster_admin_password
+  tags                          = var.tags
 }

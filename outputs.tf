@@ -30,6 +30,11 @@ output "cluster_uuid" {
   value       = qumulo_filesystem_aws.cluster.cluster_uuid
 }
 
+output "cluster_soft_capacity_limit_tb" {
+  description = "Total capacity the cluster may consume.  Only used capacity is billed."
+  value       = qumulo_filesystem_aws.cluster.soft_capacity_limit_tb
+}
+
 output "deployment_unique_name" {
   description = "Unique deployment identifier"
   value       = qumulo_filesystem_aws.cluster.deployment_unique_name
@@ -40,16 +45,6 @@ output "endpoint_ips" {
   value       = !local.provision_nlb ? qumulo_filesystem_aws.cluster.endpoint_ips : null
 }
 
-output "primary_ips" {
-  description = "Per-node primary IPs. Use these directly when no floating IPs are configured, or for per-node access."
-  value       = qumulo_filesystem_aws.cluster.primary_ips
-}
-
-output "soft_capacity_limit_tb" {
-  description = "Total capacity the cluster may consume.  Only used capacity is billed."
-  value       = qumulo_filesystem_aws.cluster.soft_capacity_limit_tb
-}
-
 output "endpoints" {
   description = "Connection endpoints for various protocols"
   value = {
@@ -58,4 +53,19 @@ output "endpoints" {
     nfs    = local.provision_nlb ? module.nlb[0].nfs : (local.provision_resolver ? module.route53-resolver[0].nfs : "${try(qumulo_filesystem_aws.cluster.endpoint_ips[0], "pending")}:/<NFS Export Name>")
     smb    = local.provision_nlb ? module.nlb[0].smb : (local.provision_resolver ? module.route53-resolver[0].smb : "\\${try(qumulo_filesystem_aws.cluster.endpoint_ips[0], "pending")}\\<SMB Share Name>")
   }
+}
+
+output "primary_ips" {
+  description = "Per-node primary IPs. Use these directly when no floating IPs are configured, or for per-node access."
+  value       = qumulo_filesystem_aws.cluster.primary_ips
+}
+
+output "provisioner_log" {
+  description = "CloudWatch Log for the provisioner"
+  value       = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#logsV2:log-groups/log-group/$252Fqumulo$252F${qumulo_filesystem_aws.cluster.deployment_unique_name}$252Fprovisioner"
+}
+
+output "threat_detection_neuralprotect_ip" {
+  description = "IP address for the NeuralProtect instance"
+  value       = local.provision_np ? module.neuralprotect.neuralprotect_ip : null
 }

@@ -71,6 +71,13 @@ variable "audit_logging" {
   default     = false
 }
 
+variable "cluster_dns_name" {
+  description = "OPTIONAL: DNS Name for the cluster.  Leave null to automatically pickup the QDNS or NLB DNS name."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
 variable "cluster_fqdn" {
   description = "OPTIONAL: Fully qualified domain name for Qumulo DNS"
   type        = string
@@ -157,6 +164,14 @@ variable "kms_key_id" {
   nullable    = true
 }
 
+variable "nexus_api_token" {
+  description = "OPTIONAL: Qumulo Nexus API token for NeuralProtect"
+  type        = string
+  sensitive   = true
+  default     = null
+  nullable    = true
+}
+
 variable "nexus_registration_key" {
   description = "OPTIONAL: Qumulo Nexus registration key for remote support"
   type        = string
@@ -211,6 +226,24 @@ variable "nlb_stickiness" {
   description = "OPTIONAL: AWS NLB sticky sessions"
   type        = bool
   default     = true
+}
+
+variable "np_deletion_protection" {
+  description = "OPTIONAL: Causes Terraform to throw an error upon destroy for the NeuralProtect resource.  Safegaurd your NeuralProtect instance.  Set to false to destroy."
+  type        = bool
+  default     = true
+}
+
+variable "np_instance_type" {
+  description = "OPTIONAL: NeuralProtect EC2 instance type."
+  type        = string
+  default     = "m6a.xlarge"
+}
+
+variable "np_provision" {
+  description = "OPTIOINAL: true/false to enable deployment of NeuralProtect."
+  type        = bool
+  default     = false
 }
 
 variable "node_count" {

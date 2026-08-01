@@ -47,9 +47,9 @@ provisioner_security_group_id = null
 s3_log_bucket_name            = null
 s3_log_bucket_prefix          = null
 tags = {
-  owner        = "smith"
-  department   = "it"
-  purpose      = "prod"
+  owner      = "smith"
+  department = "it"
+  purpose    = "prod"
 }
 
 # ***** Qumulo Cluster Variables ******
@@ -82,7 +82,7 @@ floating_ip_count        = 12
 nexus_registration_key   = null
 provider_timeout_minutes = 30
 storage_class            = null
-soft_capacity_limit_tb   = 100
+soft_capacity_limit_tb   = null
 
 # ***** Miscellaneous Variables *******
 # If userdata needs to be completely overridden contact support@qumulo.com.  Typically most needs can be accomodated with these pre/post hooks.
@@ -129,3 +129,19 @@ nlb_override_subnet_ids = null
 nlb_provision           = false
 nlb_public              = false
 nlb_stickiness          = true
+
+# ***** OPTIONAL NeuralProtect Module *****
+# ----- Realtime Ransomware Detection with Qumulo NeuralProtect.  Additional charges apply.
+# ----- NOTE: This module requires connectivity to the CNQ cluster to create the RBAC role.  If you only have AWS API connectivity in your Terraform environment this module will fail.
+#
+# cluster_dns_name                - DNS Name for the cluster.  Leave null to automatically pickup the QDNS or NLB DNS name.
+#                                   Ignored if using floating IPs without QDNS
+# np_deletion_protection          - Causes Terraform to throw an error upon destroy for the NeuralProtect resource.  Safegaurd your NeuralProtect instance.  Default = true.  Set to false to destroy.
+# np_instance_type                - The EC2 instance type for NeuralProtect
+# np_provision                    - true/false to enable deployment of the NeuralProtect.
+# nexus_api_token                 - Qumulo Nexus API token for NeuralProtect.  Required.
+cluster_dns_name       = null
+np_deletion_protection = true
+np_instance_type       = "m6a.xlarge"
+np_provision           = false
+nexus_api_token        = null
