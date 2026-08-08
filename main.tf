@@ -60,8 +60,8 @@ module "secrets" {
   admin_pwd_or_secrets_arn = var.admin_pwd_or_secrets_arn
 }
 
-#This resource builds the Qumulo Cluster consisting of EC2 instances, EBS volumes, and S3 buckets.
-#A security groups and IAM roles are built for the cluster and and provisioning instance.
+#This resource builds the Qumulo Filesystem Cluster consisting of EC2 instances, EBS volumes, and S3 buckets.
+#Security groups and IAM roles are built for the cluster and and provisioning instance.
 resource "qumulo_filesystem_aws" "cluster" {
   provider = qumulo
 
@@ -82,12 +82,11 @@ resource "qumulo_filesystem_aws" "cluster" {
   floating_ip_count             = local.floating_ip_count
   instance_type                 = var.instance_type
   kms_key_id                    = var.kms_key_id
+  networking_mode               = var.networking_mode
   nexus_registration_key        = var.nexus_registration_key
   node_count                    = var.node_count
-  node_hooks                    = var.node_hooks
   permissions_boundary_arn      = var.permissions_boundary_arn
   provisioner_ami_id            = var.provisioner_ami_id
-  provisioner_hooks             = var.provisioner_hooks
   provisioner_iam_role_arn      = var.provisioner_iam_role_arn
   provisioner_instance_type     = var.provisioner_instance_type
   provisioner_security_group_id = var.provisioner_security_group_id
@@ -99,6 +98,17 @@ resource "qumulo_filesystem_aws" "cluster" {
   subnet_ids                    = var.subnet_ids
   tags                          = var.tags
   vpc_id                        = var.vpc_id
+
+  node_hooks = {
+    pre_run  = var.node_hooks_files.pre_run_file == null ? null : file("${path.module}/hooks/${var.node_hooks_files.pre_run_file}")
+    post_run = var.node_hooks_files.post_run_file == null ? null : file("${path.module}/hooks/${var.node_hooks_files.post_run_file}")
+    override = var.node_hooks_files.override_file == null ? null : file("${path.module}/hooks/${var.node_hooks_files.override_file}")
+  }
+  provisioner_hooks = {
+    pre_run  = var.provisioner_hooks_files.pre_run_file == null ? null : file("${path.module}/hooks/${var.provisioner_hooks_files.pre_run_file}")
+    post_run = var.provisioner_hooks_files.post_run_file == null ? null : file("${path.module}/hooks/${var.provisioner_hooks_files.post_run_file}")
+    override = var.provisioner_hooks_files.override_file == null ? null : file("${path.module}/hooks/${var.provisioner_hooks_files.override_file}")
+  }
 
   timeouts {
     create = "${tostring(var.provider_timeout_minutes)}m"

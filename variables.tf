@@ -164,6 +164,19 @@ variable "kms_key_id" {
   nullable    = true
 }
 
+variable "networking_mode" {
+  description = "OPTIONAL: Only change this from default (host_managed) if importing a cluster that was deployed without the Qumulo Terraform Provider.  Terraform versions prior to 7.0."
+  type        = string
+  default     = "host_managed"
+  validation {
+    condition = anytrue([
+      var.networking_mode == "host_managed",
+      var.networking_mode == "qumulo_managed"
+    ])
+    error_message = "Qumulo networking_mode must be either host_managed (default) or qumulo_managed if importing a cluster deployed without the Qumulo Terraform Provider."
+  }
+}
+
 variable "nexus_api_token" {
   description = "OPTIONAL: Qumulo Nexus API token for NeuralProtect"
   type        = string
@@ -252,8 +265,8 @@ variable "node_count" {
   nullable    = false
 }
 
-variable "node_hooks" {
-  description = "OPTIONAL: Pre and post userdata hooks for Cluster Nodes."
+variable "node_hooks_files" {
+  description = "OPTIONAL: Pre and post userdata hooks files for Cluster Nodes."
   type        = map(string)
   default     = null
   nullable    = true
@@ -280,8 +293,8 @@ variable "provisioner_ami_id" {
   nullable    = true
 }
 
-variable "provisioner_hooks" {
-  description = "OPTIONAL: Pre and post userdata hooks for the provisioner."
+variable "provisioner_hooks_files" {
+  description = "OPTIONAL: Pre and post userdata hooks files for the provisioner."
   type        = map(string)
   default     = null
   nullable    = true

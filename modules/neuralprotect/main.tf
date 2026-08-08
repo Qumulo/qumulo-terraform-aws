@@ -33,6 +33,6 @@ resource "qumulo_threat_detection_aws" "neuralprotect" {
   instance_type                 = var.instance_type
   kms_key_id                    = var.kms_key_id
   #permissions_boundary_arn      = var.permissions_boundary_arn
-  td_admin_password             = var.cluster_admin_password
-  tags                          = var.tags
+  td_admin_password = var.cluster_admin_password
+  tags              = var.tags
 }

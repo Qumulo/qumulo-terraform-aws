@@ -85,17 +85,19 @@ storage_class            = null
 soft_capacity_limit_tb   = null
 
 # ***** Miscellaneous Variables *******
-# If userdata needs to be completely overridden contact support@qumulo.com.  Typically most needs can be accomodated with these pre/post hooks.
-# node_hooks        - OPTIONAL: Advanced use only.  Hooks run pre-userdata execution or post-userdata execution.  Executed only on first boot cycle.  See the docs.
-# provisioner_hooks - OPTIONAL: Advanced use only.  Hooks run pre-userdata execution or post-userdata execution.  Executed on every boot cycle.  See the docs.
-node_hooks = {
-  pre_run  = null
-  post_run = null
-}
+# If userdata needs to be completely overridden contact support@qumulo.com or your Qumulo SE/SA.  Typically most needs can be accomodated with these pre/post hooks. Hooks look in the /hook directory for the file.
+# node_hooks          - OPTIONAL: Advanced use only.  Hooks run pre-user-data execution or post-user-data execution.  Override completely replaces user-data. Executed only on first boot cycle.  See the docs.
+# provisioner_hooks   - OPTIONAL: Advanced use only.  Hooks run pre-user-data execution or post-user-data execution.   Override completely replaces user-data. Executed on every boot cycle.  See the docs.
 
-provisioner_hooks = {
-  pre_run  = null
-  post_run = null
+node_hooks_files = {
+  pre_run_file  = null
+  post_run_file = null
+  override_file = null
+}
+provisioner_hooks_files = {
+  pre_run_file  = null
+  post_run_file = null
+  override_file = null
 }
 
 # ****************************** OPTIONAL MODULES *****************************
