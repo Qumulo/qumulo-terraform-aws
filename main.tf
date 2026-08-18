@@ -20,7 +20,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 #SOFTWARE.
 
-# **** Version 7.4 ****
+# **** Version 7.5 ****
 
 data "aws_vpc" "selected" {
   id = var.vpc_id
@@ -169,23 +169,24 @@ module "nlb" {
   vpc_id                           = var.vpc_id
 }
 
+##THIS MODULE IS FOR FUTURE USE.
 ##This module creates an AWS instance to run Qumulo NeuralProtect for realtime ransomware dectection.
-module "neuralprotect" {
-  count = local.provision_np ? 1 : 0
-
-  source = "./modules/neuralprotect"
-  providers = {
-    qumulo = qumulo.neuralprotect
-  }
-
-  additional_security_group_ids = var.additional_security_group_ids
-  allow_cidrs                   = var.allow_cidrs
-  cluster_admin_password        = module.secrets.resolved_password
-  cluster_dns_name              = local.provision_nlb ? module.nlb[0].dns : (local.provision_resolver ? module.route53-resolver[0].dns : null)
-  cluster_reference             = qumulo_filesystem_aws.cluster.cluster_reference
-  deletion_protection           = var.np_deletion_protection
-  instance_type                 = var.np_instance_type
-  kms_key_id                    = var.kms_key_id
-  permissions_boundary_arn      = var.permissions_boundary_arn
-  tags                          = var.tags
-}
+#module "neuralprotect" {
+#  count = local.provision_np ? 1 : 0
+#
+#  source = "./modules/neuralprotect"
+#  providers = {
+#    qumulo = qumulo.neuralprotect
+#  }
+#
+#  additional_security_group_ids = var.additional_security_group_ids
+#  allow_cidrs                   = var.allow_cidrs
+#  cluster_admin_password        = module.secrets.resolved_password
+#  cluster_dns_name              = local.provision_nlb ? module.nlb[0].dns : (local.provision_resolver ? module.route53-resolver[0].dns : null)
+#  cluster_reference             = qumulo_filesystem_aws.cluster.cluster_reference
+#  deletion_protection           = var.np_deletion_protection
+#  instance_type                 = var.np_instance_type
+#  kms_key_id                    = var.kms_key_id
+#  permissions_boundary_arn      = var.permissions_boundary_arn
+#  tags                          = var.tags
+#}

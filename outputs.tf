@@ -65,7 +65,7 @@ output "provisioner_log" {
   value       = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#logsV2:log-groups/log-group/$252Fqumulo$252F${qumulo_filesystem_aws.cluster.deployment_unique_name}$252Fprovisioner"
 }
 
-output "threat_detection_neuralprotect_ip" {
-  description = "IP address for the NeuralProtect instance"
-  value       = local.provision_np ? module.neuralprotect.neuralprotect_ip : null
-}
+#output "threat_detection_neuralprotect_ip" {
+#  description = "IP address for the NeuralProtect instance"
+#  value       = local.provision_np ? module.neuralprotect.neuralprotect_ip : null
+#}

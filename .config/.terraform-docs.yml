@@ -19,7 +19,7 @@ content: |-
   ## Getting Started with Cloud Native Qumulo (CNQ)
   For an overview of CNQ, its reference architecture, and limits, see [How Cloud Native Qumulo Works](https://docs.qumulo.com/aws-administrator-guide/getting-started/how-cloud-native-qumulo-works.html) and for prerequisites and detailed instructions, see [Deploying Cloud Native Qumulo on AWS with Terraform](https://docs.qumulo.com/aws-administrator-guide/getting-started/deploying-instance-terraform.html) on the Documentation Portal.
 
-  Qumulo Core >= 7.9.2 is required for this Terraform
+  Qumulo Core >= 7.9.2.1 is required for this Terraform
 
   > ✅ **Tip:** For help with deployment, configuration, updates, scaling out your cluster, and best practices for high performance, [message us on Slack](https://docs.qumulo.com/contacting-qumulo-care-team.html).
 

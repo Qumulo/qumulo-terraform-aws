@@ -1,5 +1,5 @@
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.4"
+  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.5"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"

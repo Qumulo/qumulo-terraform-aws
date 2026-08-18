@@ -13,7 +13,7 @@ Note you can't put variables in the backend.tf config, which is why this note is
 ## Getting Started with Cloud Native Qumulo (CNQ)
 For an overview of CNQ, its reference architecture, and limits, see [How Cloud Native Qumulo Works](https://docs.qumulo.com/aws-administrator-guide/getting-started/how-cloud-native-qumulo-works.html) and for prerequisites and detailed instructions, see [Deploying Cloud Native Qumulo on AWS with Terraform](https://docs.qumulo.com/aws-administrator-guide/getting-started/deploying-instance-terraform.html) on the Documentation Portal.
 
-Qumulo Core >= 7.9.2 is required for this Terraform
+Qumulo Core >= 7.9.2.1 is required for this Terraform
 
 > ✅ **Tip:** For help with deployment, configuration, updates, scaling out your cluster, and best practices for high performance, [message us on Slack](https://docs.qumulo.com/contacting-qumulo-care-team.html).
 
@@ -24,7 +24,7 @@ Qumulo Core >= 7.9.2 is required for this Terraform
 
 ```hcl
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.4"
+  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.5"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -92,7 +92,7 @@ output "outputs_cloud_native_qumulo" {
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.1 |
-| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4 |
+| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.10 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
 
 ## Inputs
@@ -161,7 +161,6 @@ output "outputs_cloud_native_qumulo" {
 | <a name="output_endpoints"></a> [endpoints](#output\_endpoints) | Connection endpoints for various protocols |
 | <a name="output_primary_ips"></a> [primary\_ips](#output\_primary\_ips) | Per-node primary IPs. Use these directly when no floating IPs are configured, or for per-node access. |
 | <a name="output_provisioner_log"></a> [provisioner\_log](#output\_provisioner\_log) | CloudWatch Log for the provisioner |
-| <a name="output_threat_detection_neuralprotect_ip"></a> [threat\_detection\_neuralprotect\_ip](#output\_threat\_detection\_neuralprotect\_ip) | IP address for the NeuralProtect instance |
 
 ---
 
