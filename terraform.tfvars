@@ -22,7 +22,6 @@
 # s3_log_bucket_prefix          - (OPTIONAL) A prefix in the bucket (path) to send S3 logs to.
 # permissions_boundary_arn      - (OPTIONAL) IAM permissions boundary ARN applied to the cluster and provisioner roles. The provider attaches the same boundary to both roles it creates.
 # tags                          - (OPTIONAL) Tags to apply to all AWS resources created for this cluster.
-#subnet_ids    = ["subnet-01d76eb8ccdc3f156", "subnet-0edfe9c88d90d51af", "subnet-0c8edd3974ebe65c2"]
 
 #-----------REQUIRED-------------------
 deployment_name = "my-deployment-name"
@@ -55,34 +54,35 @@ tags = {
 # ***** Qumulo Cluster Variables ******
 # admin_pwd_or_secrets_arn  - The password may be provided as text OR may be pulled from AWS Secrets Manager by referencing the ARN.  Admin password requirements:
 #                              8-128 characters long containing at least one uppercase letter, one lowercase letter, and one number or special character. Sensitive -- not stored in Terraform state.
-# arn_secrets_manager       - ARN for AWS Secrets Manager where you may reference your cluster's Admin Password.  Sensitive -- not stored in Terraform state.
+# cluster_name              - Cluster name (2-15 alphanumeric characters). Dash (-) is allowed if not the first or last character. Used as a prefix for AWS resources created for this cluster.
 # cluster_product_type      - Cluster storage product type (immutable after creation). HOT: Optimized for frequently accessed data. COLD: Optimized for archival/infrequently accessed data.
-# name                      - Cluster name (2-15 alphanumeric characters). Dash (-) is allowed if not the first or last character. Used as a prefix for AWS resources created for this cluster.
-# node_count                - Number of nodes in the cluster. Valid values: 1 (single node), or 3-24. 1 and 4 not allowed for multi-AZ.
 # deletion_protection       - Causes Terraform to throw an error upon destroy for the Qumulo Cluster resource.  Safegaurd your cluster.  Default = true.  Set to false to destroy.
+# node_count                - Number of nodes in the cluster. Valid values: 1 (single node), or 3-24. 1 and 4 not allowed for multi-AZ.
 # audit_logging             - (OPTIONAL) Send Qumulo audit logs to AWS CloudWatch logs.
 # cluster_version           - (OPTIONAL) Qumulo software version. Defaults to latest. Immutable after creation. Upgrade version via cluster UI/API.
 # floating_ip_count         - (OPTIONAL) Number of floating IPs. Must be 0, or between 3 and 100. Default=12. NOT applicable with multi-AZ deployments.  
+# ip_v4_or_v6               - (OPTIONAL) Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider.
 # nexus_registration_key    - (OPTIONAL) Qumulo Nexus registration key for remote support. Obtain from https://nexus.qumulo.com/user/registration-key
 # provider_timeout_minutes  - (OPTIONAL) The total time, in minutes, after which Terraform will abondon the provider deployment of the Qumulo cluster and timeout. Default is 30 minutes.
-# storage_class             - (OPTIONAL) HOT cluster default is INTELLIGENT_TIERING or override to STANDARD, COLD cluster default is GLACIER_IR or override to STANDARD_IA
 # soft_capacity_limit_tb    - (OPTIONAL) Soft capacity limit in TB (50 to 50000). Default is 500TB. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed.
+# storage_class             - (OPTIONAL) HOT cluster default is INTELLIGENT_TIERING or override to STANDARD, COLD cluster default is GLACIER_IR or override to STANDARD_IA
 
 #-----------REQUIRED-------------------
 admin_pwd_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
 cluster_name             = "CNQ-HOT"
 cluster_product_type     = "HOT"
-node_count               = 3
 deletion_protection      = true
+node_count               = 3
 
 #------------OPTIONAL------------------
 audit_logging            = false
 cluster_version          = null
 floating_ip_count        = 12
+ip_v4_or_v6              = "v4"
 nexus_registration_key   = null
 provider_timeout_minutes = 30
-storage_class            = null
 soft_capacity_limit_tb   = null
+storage_class            = null
 
 # ***** Miscellaneous Variables *******
 # If userdata needs to be completely overridden contact support@qumulo.com or your Qumulo SE/SA.  Typically most needs can be accomodated with these pre/post hooks. Hooks look in the /hook directory for the file.

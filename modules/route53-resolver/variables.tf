@@ -32,6 +32,10 @@ variable "r53_second_subnet_id" {
   description = "A second subnet ID, in a unique AZ other than the cluster AZ, for single AZ clusters.  This is then used to build a R53 Resolver to forward traffic to Qumulo DNS for Floating IP resolution."
   type        = string
 }
+variable "resolver_endpoint_type" {
+  description = "AWS v4 or dualstack for the resolver"
+  type        = string
+}
 variable "subnet_id" {
   description = "AWS private subnet identifier"
   type        = string

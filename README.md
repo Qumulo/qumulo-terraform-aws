@@ -24,7 +24,7 @@ Qumulo Core >= 7.9.2 is required for this Terraform
 
 ```hcl
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.0"
+  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.4"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -60,17 +60,18 @@ module "cloud_native_qumulo" {
   admin_pwd_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
   cluster_name             = "CNQ-HOT"
   cluster_product_type     = "HOT"
-  node_count               = 3
   deletion_protection      = true
+  node_count               = 3
 
   #------------OPTIONAL------------------
   audit_logging            = false
   cluster_version          = null
   floating_ip_count        = 12
+  ip_v4_or_v6              = "v4"  
   nexus_registration_key   = null
   provider_timeout_minutes = 30
-  storage_class            = null
   soft_capacity_limit_tb   = null
+  storage_class            = null  
 }
 
 output "outputs_cloud_native_qumulo" {
@@ -115,6 +116,7 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_ec2_key_pair"></a> [ec2\_key\_pair](#input\_ec2\_key\_pair) | EC2 key pair name for SSH access to cluster nodes | `string` | n/a | yes |
 | <a name="input_floating_ip_count"></a> [floating\_ip\_count](#input\_floating\_ip\_count) | OPTIONAL: Number of floating IPs. Must be 0, or between 3 and 100. NOT applicable with multi-AZ deployments. | `number` | `3` | no |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | EC2 instance type for the cluster. Prefer i7i, i4i, i7ien.  Supported families include m6idn, m6i, m7i, i3en, i4i, i7i, i7ie. | `string` | n/a | yes |
+| <a name="input_ip_v4_or_v6"></a> [ip\_v4\_or\_v6](#input\_ip\_v4\_or\_v6) | OPTIONAL: Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider. | `string` | `"v4"` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | OPTIONAL: KMS key ARN for encrypting AWS services like EBS and S3 (immutable after creation). Qumulo encrypts all data independent of AWS default or KMS keys. | `string` | `null` | no |
 | <a name="input_networking_mode"></a> [networking\_mode](#input\_networking\_mode) | OPTIONAL: Only change this from default (host\_managed) if importing a cluster that was deployed without the Qumulo Terraform Provider.  Terraform versions prior to 7.0. | `string` | `"host_managed"` | no |
 | <a name="input_nexus_api_token"></a> [nexus\_api\_token](#input\_nexus\_api\_token) | OPTIONAL: Qumulo Nexus API token for NeuralProtect | `string` | `null` | no |

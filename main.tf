@@ -20,7 +20,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 #SOFTWARE.
 
-# **** Version 7.2 ****
+# **** Version 7.4 ****
 
 data "aws_vpc" "selected" {
   id = var.vpc_id
@@ -36,8 +36,9 @@ locals {
   provision_nlb = var.nlb_provision || length(var.subnet_ids) >= 3
 
   #Logic to decide when to provision the FIPS
-  floating_ip_count = local.provision_nlb ? 0 : (var.floating_ip_count == 0 ? 0 : (var.node_count > var.floating_ip_count ? var.node_count : var.floating_ip_count))
-
+  floating_ip_count    = local.provision_nlb ? 0 : (var.floating_ip_count == 0 ? 0 : (var.node_count > var.floating_ip_count ? var.node_count : var.floating_ip_count))
+  floating_ip_count_v4 = var.ip_v4_or_v6 == "v4" ? local.floating_ip_count : null
+  floating_ip_count_v6 = var.ip_v4_or_v6 == "v6" ? local.floating_ip_count : null
 
   #Logic to decide when to provision the R53 Resolver
   provision_resolver = var.r53_second_subnet_id == null || var.cluster_fqdn == null || local.provision_nlb ? false : true
@@ -79,7 +80,8 @@ resource "qumulo_filesystem_aws" "cluster" {
   deletion_protection           = var.deletion_protection
   deployment_name               = var.deployment_name
   ec2_key_pair                  = var.ec2_key_pair
-  floating_ip_count             = local.floating_ip_count
+  floating_ip_count             = local.floating_ip_count_v4
+  floating_ip_count_ipv6        = local.floating_ip_count_v6
   instance_type                 = var.instance_type
   kms_key_id                    = var.kms_key_id
   networking_mode               = var.networking_mode
@@ -130,10 +132,11 @@ module "route53-resolver" {
   deployment_unique_name = qumulo_filesystem_aws.cluster.deployment_unique_name
   fqdn                   = var.cluster_fqdn
   r53_second_subnet_id   = var.r53_second_subnet_id
+  resolver_endpoint_type = var.ip_v4_or_v6 == "v6" ? "DUALSTACK" : "IPV4"
   subnet_id              = var.subnet_ids[0]
   tags                   = var.tags
   target_ips             = qumulo_filesystem_aws.cluster.endpoint_ips == [] ? [qumulo_filesystem_aws.cluster.primary_ips[0]] : slice(qumulo_filesystem_aws.cluster.endpoint_ips, 0, 3)
-  vpc_cidr               = data.aws_vpc.selected.cidr_block
+  vpc_cidr               = var.ip_v4_or_v6 == "v6" ? data.aws_vpc.selected.ipv6_cidr_block : data.aws_vpc.selected.cidr_block
   vpc_id                 = var.vpc_id
 }
 
@@ -154,6 +157,7 @@ module "nlb" {
   dereg_delay                      = 60
   dereg_term                       = false
   dns_record_client_routing_policy = var.nlb_dns_client_affinity
+  ip_address_type                  = var.ip_v4_or_v6 == "v6" ? "dualstack" : "ipv4"
   is_public                        = var.nlb_public
   node_count                       = var.node_count
   override_subnet_ids              = var.nlb_override_subnet_ids

@@ -157,6 +157,19 @@ variable "instance_type" {
   nullable    = false
 }
 
+variable "ip_v4_or_v6" {
+  description = "OPTIONAL: Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider."
+  type        = string
+  default     = "v4"
+  validation {
+    condition = anytrue([
+      var.ip_v4_or_v6 == "v4",
+      var.ip_v4_or_v6 == "v6"
+    ])
+    error_message = "ip_v4_or_v6 nmust be either v4 or v6."
+  }
+}
+
 variable "kms_key_id" {
   description = "OPTIONAL: KMS key ARN for encrypting AWS services like EBS and S3 (immutable after creation). Qumulo encrypts all data independent of AWS default or KMS keys."
   type        = string

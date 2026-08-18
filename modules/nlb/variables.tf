@@ -48,6 +48,10 @@ variable "dns_record_client_routing_policy" {
   description = "AWS NLB DNS Client Zonal Affinity"
   type        = string
 }
+variable "ip_address_type" {
+  description = "AWS NLB IP address type"
+  type        = string
+}
 variable "is_public" {
   description = "OPTIONAL: Makes the NLB for the cluster public, setting this to true will allow anyone to reach the cluster.  Not recommended for production clusters."
   type        = bool

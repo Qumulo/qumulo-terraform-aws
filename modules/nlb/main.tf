@@ -90,6 +90,7 @@ resource "aws_security_group" "nlb" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = var.ip_address_type == "ipv4" ? null : ["::/0"]
   }
 
   ingress {
@@ -97,6 +98,7 @@ resource "aws_security_group" "nlb" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = var.ip_address_type == "ipv4" ? null : ["::/0"]    
   }
 
   tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })
@@ -104,15 +106,16 @@ resource "aws_security_group" "nlb" {
 
 #Now deploy the NLB
 resource "aws_lb" "qumulo_nlb" {
-  name                             = local.nlb_name
-  dns_record_client_routing_policy = var.dns_record_client_routing_policy
-  enable_cross_zone_load_balancing = var.cross_zone
-  enable_deletion_protection       = var.deletion_protection
-  internal                         = !var.is_public
-  ip_address_type                  = "ipv4"
-  load_balancer_type               = "network"
-  security_groups                  = [aws_security_group.nlb.id]
-  subnets                          = local.nlb_subnet_ids
+  name                              = local.nlb_name
+  dns_record_client_routing_policy  = var.dns_record_client_routing_policy
+  enable_cross_zone_load_balancing  = var.cross_zone
+  enable_deletion_protection        = var.deletion_protection
+  enable_prefix_for_ipv6_source_nat = var.ip_address_type == "ipv4" ? "off" : "on"
+  internal                          = !var.is_public
+  ip_address_type                   = var.ip_address_type
+  load_balancer_type                = "network"
+  security_groups                   = [aws_security_group.nlb.id]
+  subnets                           = local.nlb_subnet_ids
 
   tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })
 }
@@ -192,7 +195,7 @@ resource "aws_lb_listener" "port_22" {
 resource "aws_lb_target_group" "port_111" {
   name                   = "${local.nlb_name}-111"
   port                   = 111
-  protocol               = "TCP_UDP"
+  protocol               = var.ip_address_type == "ipv4" ? "TCP_UDP" : "TCP"
   target_type            = "ip"
   connection_termination = var.dereg_term
   deregistration_delay   = var.dereg_delay
@@ -218,7 +221,7 @@ resource "aws_lb_target_group_attachment" "port_111" {
 resource "aws_lb_listener" "port_111" {
   load_balancer_arn = aws_lb.qumulo_nlb.arn
   port              = "111"
-  protocol          = "TCP_UDP"
+  protocol          = var.ip_address_type == "ipv4" ? "TCP_UDP" : "TCP"
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_111.arn
@@ -300,7 +303,7 @@ resource "aws_lb_listener" "port_445" {
 resource "aws_lb_target_group" "port_2049" {
   name                   = "${local.nlb_name}-2049"
   port                   = 2049
-  protocol               = "TCP_UDP"
+  protocol               = var.ip_address_type == "ipv4" ? "TCP_UDP" : "TCP"
   target_type            = "ip"
   connection_termination = var.dereg_term
   deregistration_delay   = var.dereg_delay
@@ -326,7 +329,7 @@ resource "aws_lb_target_group_attachment" "port_2049" {
 resource "aws_lb_listener" "port_2049" {
   load_balancer_arn = aws_lb.qumulo_nlb.arn
   port              = "2049"
-  protocol          = "TCP_UDP"
+  protocol          = var.ip_address_type == "ipv4" ? "TCP_UDP" : "TCP"
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_2049.arn

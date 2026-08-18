@@ -48,24 +48,27 @@ resource "aws_security_group" "r53_resolver_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 53
-    to_port     = 53
-    protocol    = "udp"
-    cidr_blocks = [var.vpc_cidr]
+    from_port        = 53
+    to_port          = 53
+    protocol         = "udp"
+    cidr_blocks      = var.resolver_endpoint_type == "IPV4" ? [var.vpc_cidr] : null
+    ipv6_cidr_blocks = var.resolver_endpoint_type == "IPV4" ? null : [var.vpc_cidr]
   }
 
   ingress {
-    from_port   = 53
-    to_port     = 53
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
+    from_port        = 53
+    to_port          = 53
+    protocol         = "tcp"
+    cidr_blocks      = var.resolver_endpoint_type == "IPV4" ? [var.vpc_cidr] : null
+    ipv6_cidr_blocks = var.resolver_endpoint_type == "IPV4" ? null : [var.vpc_cidr]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # all protocols
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1" # all protocols
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = var.resolver_endpoint_type == "IPV4" ? null : ["::/0"]
   }
 
   tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })
@@ -74,7 +77,7 @@ resource "aws_security_group" "r53_resolver_sg" {
 resource "aws_route53_resolver_endpoint" "outbound" {
   name                   = "${var.deployment_unique_name}-outbound"
   direction              = "OUTBOUND"
-  resolver_endpoint_type = "IPV4"
+  resolver_endpoint_type = var.resolver_endpoint_type
   security_group_ids     = [aws_security_group.r53_resolver_sg.id]
 
   dynamic "ip_address" {
@@ -97,7 +100,8 @@ resource "aws_route53_resolver_rule" "forward" {
   dynamic "target_ip" {
     for_each = var.target_ips
     content {
-      ip = target_ip.value
+      ip   = var.resolver_endpoint_type == "IPV4" ? target_ip.value : null
+      ipv6 = var.resolver_endpoint_type == "IPV4" ? null : target_ip.value
     }
   }
 
