@@ -19,7 +19,6 @@
 # provisioner_instance_type     - (OPTIONAL) EC2 instance type for the provisioner VM (used during deploy operations). Default: m5.xlarge.
 # provisioner_security_group_id - (OPTIONAL) Bring-your-own security group ID for the provisioner instance. Required together with cluster_security_group_id. See cluster_security_group_id.
 # s3_gateway_validation         - (OPTIONAL) Terraform will test for an S3 gateway if this is left at null or set to true.  Set to false for environments that have complex VPC networking.  
-#                                            The provisioner will still test for an S3 Gateway prior to forming first quorum, but this is done with a traceroute which is not dependent on VPC config.
 # s3_log_bucket_name            - (OPTIONAL) A bucket name to send S3 logs to.
 # s3_log_bucket_prefix          - (OPTIONAL) A prefix in the bucket (path) to send S3 logs to.
 # permissions_boundary_arn      - (OPTIONAL) IAM permissions boundary ARN applied to the cluster and provisioner roles. The provider attaches the same boundary to both roles it creates.
