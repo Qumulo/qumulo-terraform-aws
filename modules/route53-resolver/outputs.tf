@@ -34,7 +34,7 @@ output "nfs" {
 }
 output "smb" {
   description = "SMB UNC path for Qumulo cluster"
-  value       = "\\1.${var.fqdn}\\<SMB Share Name>"
+  value       = "\\\\1.${var.fqdn}\\<SMB Share Name>"
 }
 output "url" {
   description = "Cluster URL"

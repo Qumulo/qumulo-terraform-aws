@@ -1,5 +1,5 @@
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.5"
+  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v7.6"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -21,6 +21,7 @@ module "cloud_native_qumulo" {
   provisioner_iam_role_arn      = null
   provisioner_instance_type     = null
   provisioner_security_group_id = null
+  s3_gateway_validation         = null
   s3_log_bucket_name            = null
   s3_log_bucket_prefix          = null
   tags = {

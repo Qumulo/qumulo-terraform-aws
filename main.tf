@@ -20,18 +20,23 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 #SOFTWARE.
 
-# **** Version 7.5 ****
+# **** Version 7.6 ****
 
 data "aws_vpc" "selected" {
   id = var.vpc_id
 }
 
 data "aws_vpc_endpoint" "s3_gateway" {
+  count = local.s3_check ? 1 : 0
+
   vpc_id       = var.vpc_id
   service_name = "com.amazonaws.${var.region}.s3"
 }
 
 locals {
+  #Check S3 gateway logic
+  s3_check = var.s3_gateway_validation == false ? false : true
+
   #Logic to decide when to provision the NLB
   provision_nlb = var.nlb_provision || length(var.subnet_ids) >= 3
 
@@ -49,7 +54,7 @@ locals {
 
 #Check for S3 Gateway in VPC
 resource "null_resource" "check_s3_gateway" {
-  count = data.aws_vpc_endpoint.s3_gateway.vpc_endpoint_type == "Gateway" && data.aws_vpc_endpoint.s3_gateway.state == "available" && length(data.aws_vpc_endpoint.s3_gateway.route_table_ids) > 0 ? 0 : "S3 Gateway not present for the chosen VPC.  Add an S3 Gateway."
+  count = local.s3_check ? (data.aws_vpc_endpoint.s3_gateway[0].vpc_endpoint_type == "Gateway" && data.aws_vpc_endpoint.s3_gateway[0].state == "available" && length(data.aws_vpc_endpoint.s3_gateway[0].route_table_ids) > 0 ? 0 : "S3 Gateway not present for the chosen VPC.  Add an S3 Gateway.") : 0
 }
 
 #This resource reads the AWS Secrets Manager ARN if provided, or accepts a text based admin password.  One or the other must be provided.
@@ -136,7 +141,7 @@ module "route53-resolver" {
   subnet_id              = var.subnet_ids[0]
   tags                   = var.tags
   target_ips             = qumulo_filesystem_aws.cluster.endpoint_ips == [] ? [qumulo_filesystem_aws.cluster.primary_ips[0]] : slice(qumulo_filesystem_aws.cluster.endpoint_ips, 0, 3)
-  vpc_cidr               = var.ip_v4_or_v6 == "v6" ? data.aws_vpc.selected.ipv6_cidr_block : data.aws_vpc.selected.cidr_block
+  vpc_cidr               = var.ip_v4_or_v6 == "v6" ? one(data.aws_vpc.selected.ipv6_cidr_block_associations).ipv6_cidr_block : data.aws_vpc.selected.cidr_block
   vpc_id                 = var.vpc_id
 }
 
@@ -152,7 +157,7 @@ module "nlb" {
 
   cluster_primary_ips              = qumulo_filesystem_aws.cluster.primary_ips
   cross_zone                       = var.nlb_cross_zone
-  deletion_protection              = var.deletion_protection
+  deletion_protection              = var.nlb_deletion_protection
   deployment_unique_name           = qumulo_filesystem_aws.cluster.deployment_unique_name
   dereg_delay                      = 60
   dereg_term                       = false
