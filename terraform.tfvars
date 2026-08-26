@@ -18,6 +18,7 @@
 # provisioner_iam_role_arn      - (OPTIONAL) When set, the provider performs no IAM writes for that role — no creation, policy updates, tagging, or deletion — and instead launches instances with your role's instance profile.
 # provisioner_instance_type     - (OPTIONAL) EC2 instance type for the provisioner VM (used during deploy operations). Default: m5.xlarge.
 # provisioner_security_group_id - (OPTIONAL) Bring-your-own security group ID for the provisioner instance. Required together with cluster_security_group_id. See cluster_security_group_id.
+# s3_gateway_validation         - (OPTIONAL) Terraform will test for an S3 gateway if this is left at null or set to true.  Set to false for environments that have complex VPC networking.  
 # s3_log_bucket_name            - (OPTIONAL) A bucket name to send S3 logs to.
 # s3_log_bucket_prefix          - (OPTIONAL) A prefix in the bucket (path) to send S3 logs to.
 # permissions_boundary_arn      - (OPTIONAL) IAM permissions boundary ARN applied to the cluster and provisioner roles. The provider attaches the same boundary to both roles it creates.
@@ -43,6 +44,7 @@ provisioner_ami_id            = null
 provisioner_iam_role_arn      = null
 provisioner_instance_type     = null
 provisioner_security_group_id = null
+s3_gateway_validation         = null
 s3_log_bucket_name            = null
 s3_log_bucket_prefix          = null
 tags = {
@@ -121,12 +123,14 @@ r53_second_subnet_id = null
 # ----- Disables any R53 Resolver provisioning and floating IPs. Automatically used for multi-AZ deployments.  May be specified for single AZ deployments that require PrivateLink.
 #
 # nlb_cross_zone                  - true/false to enable cross AZ load balancing.  Only relevant for multi-AZ deployments.
+# nlb_deletion_protection         - Causes Terraform to throw an error upon destroy for the NLB.  Safegaurd your NLB.  Default = true.  Set to false to destroy.
 # nlb_override_subnet_ids         - Default = null.  If nlb_provision = true, the NLB will be deployed in the same subnet(s) as the cluster.
 #                                       To override enter a list with one subnet for single AZ or three subnets if deploying a multi-AZ distributed cluster
 # nlb_provision                   - true/false to enable deployment of the NLB.  If the qconfig module senses multi-AZ it will deploy the NLB in the same subnets as the cluster
 # nlb_public                      - Set to true to make the NLB publicly accessible.  Not recommended for produciton deployments.  A firewall should front-end the cluster for public access.
 # nlb_stickiness                  - true/false to enable sticky sessions
 nlb_cross_zone          = false
+nlb_deletion_protection = true
 nlb_override_subnet_ids = null
 nlb_provision           = false
 nlb_public              = false

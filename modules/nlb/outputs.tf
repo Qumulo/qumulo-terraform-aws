@@ -34,7 +34,7 @@ output "nfs" {
 }
 output "smb" {
   description = "SMB UNC path using the Qumulo NLB"
-  value       = "\\${aws_lb.qumulo_nlb.dns_name}\\<SMB Share Name>"
+  value       = "\\\\${aws_lb.qumulo_nlb.dns_name}\\<SMB Share Name>"
 }
 output "url" {
   description = "Link to Qumulo via NLB"

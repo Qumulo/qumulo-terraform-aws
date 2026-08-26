@@ -51,7 +51,7 @@ output "endpoints" {
     web_ui = local.provision_nlb ? module.nlb[0].url : (local.provision_resolver ? module.route53-resolver[0].url : "https://${try(qumulo_filesystem_aws.cluster.endpoint_ips[0], "pending")}")
     api    = local.provision_nlb ? module.nlb[0].api : (local.provision_resolver ? module.route53-resolver[0].api : "https://${try(qumulo_filesystem_aws.cluster.endpoint_ips[0], "pending")}:8000")
     nfs    = local.provision_nlb ? module.nlb[0].nfs : (local.provision_resolver ? module.route53-resolver[0].nfs : "${try(qumulo_filesystem_aws.cluster.endpoint_ips[0], "pending")}:/<NFS Export Name>")
-    smb    = local.provision_nlb ? module.nlb[0].smb : (local.provision_resolver ? module.route53-resolver[0].smb : "\\${try(qumulo_filesystem_aws.cluster.endpoint_ips[0], "pending")}\\<SMB Share Name>")
+    smb    = local.provision_nlb ? module.nlb[0].smb : (local.provision_resolver ? module.route53-resolver[0].smb : nonsensitive("\\\\${try(qumulo_filesystem_aws.cluster.endpoint_ips[0], "pending")}\\<SMB Share Name>"))
   }
 }
 

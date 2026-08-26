@@ -24,7 +24,7 @@ Qumulo Core >= 7.9.2.1 is required for this Terraform
 
 ```hcl
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/aws-terraform-cnq.git?ref=v7.5"
+  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v7.6"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -46,6 +46,7 @@ module "cloud_native_qumulo" {
   provisioner_iam_role_arn      = null
   provisioner_instance_type     = null
   provisioner_security_group_id = null
+  s3_gateway_validation         = null
   s3_log_bucket_name            = null
   s3_log_bucket_prefix          = null
   tags = {
@@ -122,6 +123,7 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_nexus_api_token"></a> [nexus\_api\_token](#input\_nexus\_api\_token) | OPTIONAL: Qumulo Nexus API token for NeuralProtect | `string` | `null` | no |
 | <a name="input_nexus_registration_key"></a> [nexus\_registration\_key](#input\_nexus\_registration\_key) | OPTIONAL: Qumulo Nexus registration key for remote support | `string` | `null` | no |
 | <a name="input_nlb_cross_zone"></a> [nlb\_cross\_zone](#input\_nlb\_cross\_zone) | OPTIONAL: AWS NLB Enable cross-AZ load balancing | `bool` | `false` | no |
+| <a name="input_nlb_deletion_protection"></a> [nlb\_deletion\_protection](#input\_nlb\_deletion\_protection) | Enables NLB Termination protection and prevents Terraform from destroying the NLB | `bool` | `true` | no |
 | <a name="input_nlb_dns_client_affinity"></a> [nlb\_dns\_client\_affinity](#input\_nlb\_dns\_client\_affinity) | OPTIONAL: AWS NLB DNS Client Routing Policy Zonal Affinity | `string` | `"availability_zone_affinity"` | no |
 | <a name="input_nlb_override_subnet_ids"></a> [nlb\_override\_subnet\_ids](#input\_nlb\_override\_subnet\_ids) | OPTIONAL: Private Subnet ID(s) for NLB if deploying in subnet(s) other than subnet(s) the cluster is deployed in | `list(string)` | `null` | no |
 | <a name="input_nlb_provision"></a> [nlb\_provision](#input\_nlb\_provision) | OPTIONAL: Provision an AWS NLB in front of the Qumulo cluster for load balancing and client failover | `bool` | `false` | no |
@@ -141,11 +143,12 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_provisioner_security_group_id"></a> [provisioner\_security\_group\_id](#input\_provisioner\_security\_group\_id) | OPTIONAL: Bring-your-own security group ID for the provisioner instance. Required together with cluster\_security\_group\_id. See cluster\_security\_group\_id. | `string` | `null` | no |
 | <a name="input_r53_second_subnet_id"></a> [r53\_second\_subnet\_id](#input\_r53\_second\_subnet\_id) | OPTIONAL: A second subnet ID, in a unique AZ other than the cluster AZ, for single AZ clusters.  This is then used to build a R53 Resolver to forward traffic to Qumulo DNS for Floating IP resolution. | `string` | `null` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for deployment | `string` | n/a | yes |
+| <a name="input_s3_gateway_validation"></a> [s3\_gateway\_validation](#input\_s3\_gateway\_validation) | OPTIONAL: Terraform will test for an S3 gateway if this is left at null or set to true.  Set to false for environments that have complex VPC networking. | `bool` | `null` | no |
 | <a name="input_s3_log_bucket_name"></a> [s3\_log\_bucket\_name](#input\_s3\_log\_bucket\_name) | OPTIONAL: Bucket name for S3 logging | `string` | `null` | no |
 | <a name="input_s3_log_bucket_prefix"></a> [s3\_log\_bucket\_prefix](#input\_s3\_log\_bucket\_prefix) | OPTIONAL: Bucket prefix for S3 logging | `string` | `null` | no |
 | <a name="input_soft_capacity_limit_tb"></a> [soft\_capacity\_limit\_tb](#input\_soft\_capacity\_limit\_tb) | OPTIONAL: Soft capacity limit in TB (50 to 50000). Default is 500TB. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed. | `number` | `500` | no |
 | <a name="input_storage_class"></a> [storage\_class](#input\_storage\_class) | HOT cluster default is INTELLIGENT\_TIERING or STANDARD, COLD cluster default is GLACIER\_IR or STANDARD\_IA | `string` | `null` | no |
-| <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | Subnet IDs for multi-AZ deployment (3+ subnets, one per AZ) | `list(string)` | n/a | yes |
+| <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | Subnet ID for a single AZ deployment or 3+ subnets, one per AZ, for a multi-AZ deployment) | `list(string)` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | OPTIONAL: Tags to apply to all AWS resources created for this cluster. | `map(string)` | `null` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID for the cluster | `string` | n/a | yes |
 

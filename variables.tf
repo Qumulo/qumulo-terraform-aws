@@ -212,6 +212,12 @@ variable "nlb_cross_zone" {
   default     = false
 }
 
+variable "nlb_deletion_protection" {
+  description = "Enables NLB Termination protection and prevents Terraform from destroying the NLB"
+  type        = bool
+  default     = true
+}
+
 variable "nlb_dns_client_affinity" {
   description = "OPTIONAL: AWS NLB DNS Client Routing Policy Zonal Affinity"
   type        = string
@@ -231,7 +237,9 @@ variable "nlb_override_subnet_ids" {
   type        = list(string)
   default     = null
   validation {
-    condition     = var.nlb_override_subnet_ids == null || can(regex("^subnet-", var.nlb_override_subnet_ids))
+    condition     = var.nlb_override_subnet_ids == null ? true : alltrue([
+      for item in var.nlb_override_subnet_ids : can(regex("^subnet-", item))
+    ])
     error_message = "The nlb_override_subnet_ids must be a valid Subnet ID or list of Subnet IDs of the form 'subnet-', or null if deploying in the same subnet(s) as the cluster."
   }
 }
@@ -355,6 +363,13 @@ variable "region" {
   nullable    = false
 }
 
+variable "s3_gateway_validation" {
+  description = "OPTIONAL: Terraform will test for an S3 gateway if this is left at null or set to true.  Set to false for environments that have complex VPC networking."
+  type        = bool
+  default     = null
+  nullable    = true
+}
+
 variable "s3_log_bucket_name" {
   description = "OPTIONAL: Bucket name for S3 logging"
   type        = string
@@ -384,7 +399,7 @@ variable "storage_class" {
 }
 
 variable "subnet_ids" {
-  description = "Subnet IDs for multi-AZ deployment (3+ subnets, one per AZ)"
+  description = "Subnet ID for a single AZ deployment or 3+ subnets, one per AZ, for a multi-AZ deployment)"
   type        = list(string)
   nullable    = false
 }
