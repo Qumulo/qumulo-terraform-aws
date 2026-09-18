@@ -41,6 +41,8 @@ provider "qumulo" {
 }
 
 provider "qumulo" {
-  alias           = "neuralprotect"
-  nexus_api_token = var.nexus_api_token
+  aws {}
+  alias                = "neuralprotect"
+  nexus_api_token      = module.secrets.resolved_token
+  cluster_stall_window = "${tostring(var.cluster_stall_window_minutes)}m"
 }

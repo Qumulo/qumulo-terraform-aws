@@ -25,3 +25,9 @@ output "resolved_password" {
   sensitive   = true
   description = "The resolved secret value, pulled either from the plaintext variable or the AWS Secrets Manager ARN."
 }
+
+output "resolved_token" {
+  value       = local.final_token
+  sensitive   = true
+  description = "The resolved API token value, pulled either from the plaintext variable or the AWS Secrets Manager ARN."
+}

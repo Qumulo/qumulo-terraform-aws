@@ -25,3 +25,8 @@ variable "admin_pwd_or_secrets_arn" {
   type        = string
   sensitive   = true
 }
+variable "nexus_api_token_or_secrets_arn" {
+  description = "Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token."
+  type        = string
+  sensitive   = true
+}

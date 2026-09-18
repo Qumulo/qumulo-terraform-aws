@@ -33,9 +33,17 @@ data "aws_vpc_endpoint" "s3_gateway" {
   service_name = "com.amazonaws.${var.region}.s3"
 }
 
+data "aws_ssm_parameter" "ami_id" {
+  count = var.ami_parameter_name != null ? 1 : 0
+  name  = var.ami_parameter_name
+}
+
 locals {
   #Check S3 gateway logic
   s3_check = var.s3_gateway_validation == false ? false : true
+
+  #Logic to pick the correct AMI ID
+  ami_id = var.ami_parameter_name != null ? data.aws_ssm_parameter.ami_id[0].value : var.ami_id
 
   #Logic to decide when to provision the NLB
   provision_nlb = var.nlb_provision || length(var.subnet_ids) >= 3
@@ -63,7 +71,8 @@ resource "null_resource" "check_s3_gateway" {
 module "secrets" {
   source = "./modules/secrets"
 
-  admin_pwd_or_secrets_arn = var.admin_pwd_or_secrets_arn
+  admin_pwd_or_secrets_arn       = var.admin_pwd_or_secrets_arn
+  nexus_api_token_or_secrets_arn = var.nexus_api_token_or_secrets_arn
 }
 
 #This resource builds the Qumulo Filesystem Cluster consisting of EC2 instances, EBS volumes, and S3 buckets.
@@ -74,7 +83,7 @@ resource "qumulo_filesystem_aws" "cluster" {
   additional_security_group_ids = var.additional_security_group_ids
   admin_password                = module.secrets.resolved_password
   allow_cidrs                   = var.allow_cidrs == null ? [data.aws_vpc.selected.cidr_block] : concat([data.aws_vpc.selected.cidr_block], var.allow_cidrs)
-  ami_id                        = var.ami_id
+  ami_id                        = local.ami_id
   audit_logging                 = var.audit_logging
   cluster_iam_role_arn          = var.cluster_iam_role_arn
   cluster_fqdn                  = var.cluster_fqdn
@@ -90,10 +99,10 @@ resource "qumulo_filesystem_aws" "cluster" {
   instance_type                 = var.instance_type
   kms_key_id                    = var.kms_key_id
   networking_mode               = var.networking_mode
-  nexus_registration_key        = var.nexus_registration_key
   node_count                    = var.node_count
+  node_replacement_when_changed = var.node_replacement_when_changed
   permissions_boundary_arn      = var.permissions_boundary_arn
-  provisioner_ami_id            = var.provisioner_ami_id
+  provisioner_ami_id            = local.ami_id
   provisioner_iam_role_arn      = var.provisioner_iam_role_arn
   provisioner_instance_type     = var.provisioner_instance_type
   provisioner_security_group_id = var.provisioner_security_group_id
@@ -174,8 +183,8 @@ module "nlb" {
   vpc_id                           = var.vpc_id
 }
 
-##THIS MODULE IS FOR FUTURE USE.
-##This module creates an AWS instance to run Qumulo NeuralProtect for realtime ransomware dectection.
+#THIS MODULE IS FOR FUTURE USE.
+#This module creates an AWS instance to run Qumulo NeuralProtect for realtime ransomware dectection.
 #module "neuralprotect" {
 #  count = local.provision_np ? 1 : 0
 #
