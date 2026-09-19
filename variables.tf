@@ -65,6 +65,16 @@ variable "ami_id" {
   nullable    = true
 }
 
+variable "ami_parameter_name" {
+  description = "OPTIONAL: AWS Systems Manager Parameter Store parameter name to lookup the AMI. Takes priority over ami_id if provided."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.ami_parameter_name == null || can(regex("^[a-zA-Z0-9/_.-]+$", var.ami_parameter_name))
+    error_message = "The ami_parameter_name must be a valid Parameter Store parameter name."
+  }
+}
 variable "audit_logging" {
   description = "OPTIONAL: Send Qumulo audit logs to AWS CloudWatch logs."
   type        = bool
@@ -83,7 +93,7 @@ variable "cluster_fqdn" {
   type        = string
   default     = null
   validation {
-    condition     = var.cluster_fqdn == null || can(regex("^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$", var.cluster_fqdn))
+    condition     = var.cluster_fqdn == null || can(regex("^(?=.{1,64}$)[a-z0-9]([a-z0-9.-]*[a-z0-9])?$", var.cluster_fqdn))
     error_message = "The fqdn must use lowercase, start and end with letters only, and may contain . and -"
   }
 }
@@ -119,6 +129,13 @@ variable "cluster_security_group_id" {
   nullable    = true
 }
 
+variable "cluster_stall_window_minutes" {
+  description = "OPTIONAL: The time after which Terraform will abondon the provider deployment if the Qumulo cluster is not progressing with the deployment. In minutes."
+  type        = number
+  default     = 20
+  nullable    = false
+}
+
 variable "cluster_version" {
   description = "OPTIONAL: Qumulo software version. Defaults to latest. Immutable after creation. Upgrade version via cluster UI/API."
   type        = string
@@ -147,7 +164,7 @@ variable "ec2_key_pair" {
 variable "floating_ip_count" {
   description = "OPTIONAL: Number of floating IPs. Must be 0, or between 3 and 100. NOT applicable with multi-AZ deployments."
   type        = number
-  default     = 3
+  default     = 12
   nullable    = false
 }
 
@@ -190,20 +207,23 @@ variable "networking_mode" {
   }
 }
 
-variable "nexus_api_token" {
-  description = "OPTIONAL: Qumulo Nexus API token for NeuralProtect"
+variable "nexus_api_token_or_secrets_arn" {
+  description = "OPTIONAL: Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token."
   type        = string
   sensitive   = true
   default     = null
   nullable    = true
-}
 
-variable "nexus_registration_key" {
-  description = "OPTIONAL: Qumulo Nexus registration key for remote support"
-  type        = string
-  sensitive   = true
-  default     = null
-  nullable    = true
+  validation {
+    condition = (
+      # Option A: Valid AWS Secrets Manager ARN Format
+      var.nexus_api_token_or_secrets_arn == null ? true : can(regex("^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$", var.nexus_api_token_or_secrets_arn)) ||
+
+      # Option B: Plaintext API token or null
+      length(var.nexus_api_token_or_secrets_arn) == 80
+    )
+    error_message = "The nexus_api_token_or_secrets_arn must be either a valid AWS Secrets Manager ARN, or an 80 character API token."
+  }
 }
 
 variable "nlb_cross_zone" {
@@ -237,7 +257,7 @@ variable "nlb_override_subnet_ids" {
   type        = list(string)
   default     = null
   validation {
-    condition     = var.nlb_override_subnet_ids == null ? true : alltrue([
+    condition = var.nlb_override_subnet_ids == null ? true : alltrue([
       for item in var.nlb_override_subnet_ids : can(regex("^subnet-", item))
     ])
     error_message = "The nlb_override_subnet_ids must be a valid Subnet ID or list of Subnet IDs of the form 'subnet-', or null if deploying in the same subnet(s) as the cluster."
@@ -260,6 +280,13 @@ variable "nlb_stickiness" {
   description = "OPTIONAL: AWS NLB sticky sessions"
   type        = bool
   default     = true
+}
+
+variable "node_replacement_when_changed" {
+  description = "OPTIONAL: Changing the random string will trigger a node replacement with the same EC2 instance type. A typical use case would be to put in yyyy-mm-dd that you trigger a replace."
+  type        = string
+  default     = null
+  nullable    = true
 }
 
 variable "np_deletion_protection" {
@@ -305,13 +332,6 @@ variable "provider_timeout_minutes" {
   type        = number
   default     = 30
   nullable    = false
-}
-
-variable "provisioner_ami_id" {
-  description = "OPTIONAL: AMI ID for the provisioner instance. Defaults to Ubunti 24.04 AMI."
-  type        = string
-  default     = null
-  nullable    = true
 }
 
 variable "provisioner_hooks_files" {

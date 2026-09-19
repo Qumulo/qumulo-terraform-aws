@@ -22,30 +22,54 @@
 
 locals {
   # 1. Check if the input is an ARN
-  is_arn = can(regex("^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$", var.admin_pwd_or_secrets_arn))
+  pwd_is_arn   = can(regex("^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$", var.admin_pwd_or_secrets_arn))
+  token_is_arn = can(regex("^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$", var.nexus_api_token_or_secrets_arn))
+
 
   # 2. Extract the raw string from AWS if an ARN was provided
-  raw_aws_secret = local.is_arn ? data.aws_secretsmanager_secret_version.selected[0].secret_string : null
+  pwd_raw_aws_secret   = local.pwd_is_arn ? data.aws_secretsmanager_secret_version.password[0].secret_string : null
+  token_raw_aws_secret = local.token_is_arn ? data.aws_secretsmanager_secret_version.token[0].secret_string : null
+
 
   # 3. Safely parse the secret
-  # - try() attempts the first argument: treating it as JSON and looking for ANY case variation of "password" key.
-  # - If that fails (e.g., it's a plain text secret, or "password" key doesn't exist), it uses the raw string.
-  parsed_aws_secret = local.is_arn ? try(
-    [for k, v in jsondecode(local.raw_aws_secret) : v if lower(k) == "password"][0],
-    local.raw_aws_secret
+  # - try() attempts the first argument: treating it as JSON and looking for ANY case variation of "password" or "token" key. These are two separate secrets.
+  # - If that fails (e.g., it's a plain text secret, or "password" key or "token" key doesn't exist), it uses the raw string.
+  pwd_parsed_aws_secret = local.pwd_is_arn ? try(
+    [for k, v in jsondecode(local.pwd_raw_aws_secret) : v if lower(k) == "password"][0],
+    local.pwd_raw_aws_secret
   ) : null
 
-  # 4. Route the final password dynamically
-  final_password = local.is_arn ? local.parsed_aws_secret : var.admin_pwd_or_secrets_arn
+  token_parsed_aws_secret = local.token_is_arn ? try(
+    [for k, v in jsondecode(local.token_raw_aws_secret) : v if lower(k) == "token"][0],
+    local.token_raw_aws_secret
+  ) : null
+
+  # 4. Route the final password and token dynamically
+  final_password = local.pwd_is_arn ? local.pwd_parsed_aws_secret : var.admin_pwd_or_secrets_arn
+  final_token    = local.token_is_arn ? local.token_parsed_aws_secret : var.nexus_api_token_or_secrets_arn
 }
 
-# Only fetches from AWS if the single input was detected as an ARN
-data "aws_secretsmanager_secret" "selected" {
-  count = local.is_arn ? 1 : 0
-  arn   = var.admin_pwd_or_secrets_arn
+# Only fetches from AWS if either of the inputs were detected as an ARN
+data "aws_secretsmanager_secret" "password" {
+  count = local.pwd_is_arn ? 1 : 0
+
+  arn = var.admin_pwd_or_secrets_arn
 }
 
-data "aws_secretsmanager_secret_version" "selected" {
-  count     = local.is_arn ? 1 : 0
-  secret_id = data.aws_secretsmanager_secret.selected[0].id
+data "aws_secretsmanager_secret_version" "password" {
+  count = local.pwd_is_arn ? 1 : 0
+
+  secret_id = data.aws_secretsmanager_secret.password[0].id
+}
+
+data "aws_secretsmanager_secret" "token" {
+  count = local.token_is_arn ? 1 : 0
+
+  arn = var.nexus_api_token_or_secrets_arn
+}
+
+data "aws_secretsmanager_secret_version" "token" {
+  count = local.token_is_arn ? 1 : 0
+
+  secret_id = data.aws_secretsmanager_secret.token[0].id
 }

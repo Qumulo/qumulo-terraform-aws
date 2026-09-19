@@ -86,19 +86,19 @@ resource "aws_security_group" "nlb" {
   vpc_id      = var.vpc_id
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = var.ip_address_type == "ipv4" ? null : ["::/0"]
   }
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = var.ip_address_type == "ipv4" ? null : ["::/0"]    
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = var.ip_address_type == "ipv4" ? null : ["::/0"]
   }
 
   tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })

@@ -38,11 +38,11 @@ module "cloud_native_qumulo" {
   additional_security_group_ids = null
   allow_cidrs                   = null
   ami_id                        = null
+  ami_parameter_name            = null
   cluster_iam_role_arn          = null
   cluster_security_group_id     = null
   kms_key_id                    = null
   permissions_boundary_arn      = null
-  provisioner_ami_id            = null
   provisioner_iam_role_arn      = null
   provisioner_instance_type     = null
   provisioner_security_group_id = null
@@ -65,14 +65,16 @@ module "cloud_native_qumulo" {
   node_count               = 3
 
   #------------OPTIONAL------------------
-  audit_logging            = false
-  cluster_version          = null
-  floating_ip_count        = 12
-  ip_v4_or_v6              = "v4"  
-  nexus_registration_key   = null
-  provider_timeout_minutes = 30
-  soft_capacity_limit_tb   = null
-  storage_class            = null  
+  audit_logging                  = false
+  cluster_stall_window_minutes   = 20
+  cluster_version                = null
+  floating_ip_count              = 12
+  ip_v4_or_v6                    = "v4"
+  nexus_api_token_or_secrets_arn = null
+  node_replacement_when_changed  = null
+  provider_timeout_minutes       = 30
+  soft_capacity_limit_tb         = null
+  storage_class                  = null
 }
 
 output "outputs_cloud_native_qumulo" {
@@ -104,6 +106,7 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_admin_pwd_or_secrets_arn"></a> [admin\_pwd\_or\_secrets\_arn](#input\_admin\_pwd\_or\_secrets\_arn) | Provide either a plaintext administrator password or an AWS Secrets Manager ARN. | `string` | n/a | yes |
 | <a name="input_allow_cidrs"></a> [allow\_cidrs](#input\_allow\_cidrs) | OPTIONAL: CIDR blocks allowed to access the cluster | `list(string)` | `null` | no |
 | <a name="input_ami_id"></a> [ami\_id](#input\_ami\_id) | OPTIONAL: AMI ID for cluster nodes. If omitted, the default Qumulo AMI (Ubuntu 24.04) is used. Supports Ubuntu and RHEL 8, 9, and 10 AMIs. See aws-custom-images.md for details. | `string` | `null` | no |
+| <a name="input_ami_parameter_name"></a> [ami\_parameter\_name](#input\_ami\_parameter\_name) | OPTIONAL: AWS Systems Manager Parameter Store parameter name to lookup the AMI. Takes priority over ami\_id if provided. | `string` | `null` | no |
 | <a name="input_audit_logging"></a> [audit\_logging](#input\_audit\_logging) | OPTIONAL: Send Qumulo audit logs to AWS CloudWatch logs. | `bool` | `false` | no |
 | <a name="input_cluster_dns_name"></a> [cluster\_dns\_name](#input\_cluster\_dns\_name) | OPTIONAL: DNS Name for the cluster.  Leave null to automatically pickup the QDNS or NLB DNS name. | `string` | `null` | no |
 | <a name="input_cluster_fqdn"></a> [cluster\_fqdn](#input\_cluster\_fqdn) | OPTIONAL: Fully qualified domain name for Qumulo DNS | `string` | `null` | no |
@@ -111,17 +114,17 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Cluster name (2-15 alphanumeric characters). Used as a prefix for AWS resources created for this cluster. | `string` | n/a | yes |
 | <a name="input_cluster_product_type"></a> [cluster\_product\_type](#input\_cluster\_product\_type) | Cluster storage product type (immutable after creation). HOT: Optimized for frequently accessed data. COLD: Optimized for archival/infrequently accessed data. | `string` | n/a | yes |
 | <a name="input_cluster_security_group_id"></a> [cluster\_security\_group\_id](#input\_cluster\_security\_group\_id) | OPTIONAL: Bring-your-own security group ID for cluster nodes. When set, the provider will not create or modify a cluster security group; you must pre-create it in the VPC owner account with the rules documented in the Bring-your-own Security Groups guide. Required together with provisioner\_security\_group\_id. Required for RAM-shared subnets where the consumer account cannot create security groups in the owner's VPC. | `string` | `null` | no |
+| <a name="input_cluster_stall_window_minutes"></a> [cluster\_stall\_window\_minutes](#input\_cluster\_stall\_window\_minutes) | OPTIONAL: The time after which Terraform will abondon the provider deployment if the Qumulo cluster is not progressing with the deployment. In minutes. | `number` | `20` | no |
 | <a name="input_cluster_version"></a> [cluster\_version](#input\_cluster\_version) | OPTIONAL: Qumulo software version. Defaults to latest. Immutable after creation. Upgrade version via cluster UI/API. | `string` | `null` | no |
 | <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | Enables EC2 Termination protection and prevents Terraform from destroying non-empty S3 Buckets | `bool` | `true` | no |
 | <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | Cluster name (2-15 alphanumeric characters). Used as a prefix for AWS resources created for this cluster. | `string` | n/a | yes |
 | <a name="input_ec2_key_pair"></a> [ec2\_key\_pair](#input\_ec2\_key\_pair) | EC2 key pair name for SSH access to cluster nodes | `string` | n/a | yes |
-| <a name="input_floating_ip_count"></a> [floating\_ip\_count](#input\_floating\_ip\_count) | OPTIONAL: Number of floating IPs. Must be 0, or between 3 and 100. NOT applicable with multi-AZ deployments. | `number` | `3` | no |
+| <a name="input_floating_ip_count"></a> [floating\_ip\_count](#input\_floating\_ip\_count) | OPTIONAL: Number of floating IPs. Must be 0, or between 3 and 100. NOT applicable with multi-AZ deployments. | `number` | `12` | no |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | EC2 instance type for the cluster. Prefer i7i, i4i, i7ien.  Supported families include m6idn, m6i, m7i, i3en, i4i, i7i, i7ie. | `string` | n/a | yes |
 | <a name="input_ip_v4_or_v6"></a> [ip\_v4\_or\_v6](#input\_ip\_v4\_or\_v6) | OPTIONAL: Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider. | `string` | `"v4"` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | OPTIONAL: KMS key ARN for encrypting AWS services like EBS and S3 (immutable after creation). Qumulo encrypts all data independent of AWS default or KMS keys. | `string` | `null` | no |
 | <a name="input_networking_mode"></a> [networking\_mode](#input\_networking\_mode) | OPTIONAL: Only change this from default (host\_managed) if importing a cluster that was deployed without the Qumulo Terraform Provider.  Terraform versions prior to 7.0. | `string` | `"host_managed"` | no |
-| <a name="input_nexus_api_token"></a> [nexus\_api\_token](#input\_nexus\_api\_token) | OPTIONAL: Qumulo Nexus API token for NeuralProtect | `string` | `null` | no |
-| <a name="input_nexus_registration_key"></a> [nexus\_registration\_key](#input\_nexus\_registration\_key) | OPTIONAL: Qumulo Nexus registration key for remote support | `string` | `null` | no |
+| <a name="input_nexus_api_token_or_secrets_arn"></a> [nexus\_api\_token\_or\_secrets\_arn](#input\_nexus\_api\_token\_or\_secrets\_arn) | OPTIONAL: Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token. | `string` | `null` | no |
 | <a name="input_nlb_cross_zone"></a> [nlb\_cross\_zone](#input\_nlb\_cross\_zone) | OPTIONAL: AWS NLB Enable cross-AZ load balancing | `bool` | `false` | no |
 | <a name="input_nlb_deletion_protection"></a> [nlb\_deletion\_protection](#input\_nlb\_deletion\_protection) | Enables NLB Termination protection and prevents Terraform from destroying the NLB | `bool` | `true` | no |
 | <a name="input_nlb_dns_client_affinity"></a> [nlb\_dns\_client\_affinity](#input\_nlb\_dns\_client\_affinity) | OPTIONAL: AWS NLB DNS Client Routing Policy Zonal Affinity | `string` | `"availability_zone_affinity"` | no |
@@ -131,12 +134,12 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_nlb_stickiness"></a> [nlb\_stickiness](#input\_nlb\_stickiness) | OPTIONAL: AWS NLB sticky sessions | `bool` | `true` | no |
 | <a name="input_node_count"></a> [node\_count](#input\_node\_count) | Number of nodes in the cluster. Valid values: 1 (single node), or 3-24. 1 and 4 not allowed for multi-AZ. | `number` | n/a | yes |
 | <a name="input_node_hooks_files"></a> [node\_hooks\_files](#input\_node\_hooks\_files) | OPTIONAL: Pre and post userdata hooks files for Cluster Nodes. | `map(string)` | `null` | no |
+| <a name="input_node_replacement_when_changed"></a> [node\_replacement\_when\_changed](#input\_node\_replacement\_when\_changed) | OPTIONAL: Changing the random string will trigger a node replacement with the same EC2 instance type. A typical use case would be to put in yyyy-mm-dd that you trigger a replace. | `string` | `null` | no |
 | <a name="input_np_deletion_protection"></a> [np\_deletion\_protection](#input\_np\_deletion\_protection) | OPTIONAL: Causes Terraform to throw an error upon destroy for the NeuralProtect resource.  Safegaurd your NeuralProtect instance.  Set to false to destroy. | `bool` | `true` | no |
 | <a name="input_np_instance_type"></a> [np\_instance\_type](#input\_np\_instance\_type) | OPTIONAL: NeuralProtect EC2 instance type. | `string` | `"m6a.xlarge"` | no |
 | <a name="input_np_provision"></a> [np\_provision](#input\_np\_provision) | OPTIOINAL: true/false to enable deployment of NeuralProtect. | `bool` | `false` | no |
 | <a name="input_permissions_boundary_arn"></a> [permissions\_boundary\_arn](#input\_permissions\_boundary\_arn) | OPTIONAL: IAM permissions boundary ARN applied to cluster and provisioner roles | `string` | `null` | no |
 | <a name="input_provider_timeout_minutes"></a> [provider\_timeout\_minutes](#input\_provider\_timeout\_minutes) | The total time after which Terraform will abondon the provider deployment of the Qumulo cluster and timeout. In minutes. | `number` | `30` | no |
-| <a name="input_provisioner_ami_id"></a> [provisioner\_ami\_id](#input\_provisioner\_ami\_id) | OPTIONAL: AMI ID for the provisioner instance. Defaults to Ubunti 24.04 AMI. | `string` | `null` | no |
 | <a name="input_provisioner_hooks_files"></a> [provisioner\_hooks\_files](#input\_provisioner\_hooks\_files) | OPTIONAL: Pre and post userdata hooks files for the provisioner. | `map(string)` | `null` | no |
 | <a name="input_provisioner_iam_role_arn"></a> [provisioner\_iam\_role\_arn](#input\_provisioner\_iam\_role\_arn) | OPTIONAL: When set, the provider performs no IAM writes for that role — no creation, policy updates, tagging, or deletion — and instead launches instances with your role's instance profile | `string` | `null` | no |
 | <a name="input_provisioner_instance_type"></a> [provisioner\_instance\_type](#input\_provisioner\_instance\_type) | OPTIONAL: EC2 instance type for the provisioner VM (used during deploy operations). Default: m5.xlarge. | `string` | `"m5.xlarge"` | no |
