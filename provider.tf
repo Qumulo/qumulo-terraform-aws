@@ -39,10 +39,3 @@ provider "qumulo" {
     # profile   = "my-profile"   # optional, overrides AWS_PROFILE
   }
 }
-
-provider "qumulo" {
-  aws {}
-  alias                = "neuralprotect"
-  nexus_api_token      = module.secrets.resolved_token
-  cluster_stall_window = "${tostring(var.cluster_stall_window_minutes)}m"
-}

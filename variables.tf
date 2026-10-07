@@ -207,6 +207,27 @@ variable "networking_mode" {
   }
 }
 
+variable "neuralsearch_allow_cidrs" {
+  description = "OPTIONAL: CIDR blocks allowed to reach the NeuralSearch UI on TCP 443. Defaults to the cluster VPC CIDR. Add peered VPC, VPN, or Direct Connect ranges here."
+  type        = list(string)
+  default     = null
+  nullable    = true
+}
+
+variable "neuralsearch_instance_type" {
+  description = "OPTIONAL: NeuralSearch EC2 instance type. Null uses the provider default (m6a.4xlarge)."
+  type        = string
+  default     = null
+  nullable    = true
+}
+
+variable "neuralsearch_provision" {
+  description = "OPTIONAL: true/false to enable deployment of the NeuralSearch appliance."
+  type        = bool
+  default     = false
+  nullable    = false
+}
+
 variable "nexus_api_token_or_secrets_arn" {
   description = "OPTIONAL: Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token."
   type        = string
@@ -287,24 +308,6 @@ variable "node_replacement_when_changed" {
   type        = string
   default     = null
   nullable    = true
-}
-
-variable "np_deletion_protection" {
-  description = "OPTIONAL: Causes Terraform to throw an error upon destroy for the NeuralProtect resource.  Safegaurd your NeuralProtect instance.  Set to false to destroy."
-  type        = bool
-  default     = true
-}
-
-variable "np_instance_type" {
-  description = "OPTIONAL: NeuralProtect EC2 instance type."
-  type        = string
-  default     = "m6a.xlarge"
-}
-
-variable "np_provision" {
-  description = "OPTIOINAL: true/false to enable deployment of NeuralProtect."
-  type        = bool
-  default     = false
 }
 
 variable "node_count" {
