@@ -55,9 +55,6 @@ locals {
 
   #Logic to decide when to provision the R53 Resolver
   provision_resolver = var.r53_second_subnet_id == null || var.cluster_fqdn == null || local.provision_nlb ? false : true
-
-  #Logic to decide when to provision NeuralProtect
-  provision_np = var.np_provision
 }
 
 #Check for S3 Gateway in VPC
@@ -182,25 +179,3 @@ module "nlb" {
   tags                             = var.tags
   vpc_id                           = var.vpc_id
 }
-
-#THIS MODULE IS FOR FUTURE USE.
-#This module creates an AWS instance to run Qumulo NeuralProtect for realtime ransomware dectection.
-#module "neuralprotect" {
-#  count = local.provision_np ? 1 : 0
-#
-#  source = "./modules/neuralprotect"
-#  providers = {
-#    qumulo = qumulo.neuralprotect
-#  }
-#
-#  additional_security_group_ids = var.additional_security_group_ids
-#  allow_cidrs                   = var.allow_cidrs
-#  cluster_admin_password        = module.secrets.resolved_password
-#  cluster_dns_name              = local.provision_nlb ? module.nlb[0].dns : (local.provision_resolver ? module.route53-resolver[0].dns : null)
-#  cluster_reference             = qumulo_filesystem_aws.cluster.cluster_reference
-#  deletion_protection           = var.np_deletion_protection
-#  instance_type                 = var.np_instance_type
-#  kms_key_id                    = var.kms_key_id
-#  permissions_boundary_arn      = var.permissions_boundary_arn
-#  tags                          = var.tags
-#}

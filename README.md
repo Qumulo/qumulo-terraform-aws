@@ -84,6 +84,54 @@ output "outputs_cloud_native_qumulo" {
 
 ---
 
+## NeuralSearch (optional)
+
+NeuralSearch is a Qumulo appliance that indexes the files on your cluster and serves a search UI. This module deploys it as a single EC2 VM in the cluster VPC and first subnet. It is off by default. The module uses the `qumulo_neuralsearch_aws` provider resource, which requires Qumulo provider 1.4.19 or later.
+
+### Enable NeuralSearch
+
+Set these variables in `terraform.tfvars` or in your module block.
+
+```hcl
+neuralsearch_provision     = true
+neuralsearch_allow_cidrs   = null # CIDR blocks allowed to reach the UI on TCP 443. Null allows the cluster VPC CIDR.
+neuralsearch_instance_type = null # Null uses the provider default (m6a.4xlarge).
+```
+
+Deletion protection follows `deletion_protection`.
+
+### Networking requirements
+
+- The appliance subnet needs outbound HTTPS (for example through a NAT gateway) to `qumulo-neuralsearch.s3.us-west-2.amazonaws.com`, `get.docker.com`, `download.docker.com`, `public.ecr.aws`, the Ubuntu package mirrors, and `ssm.<region>.amazonaws.com` (or an SSM interface endpoint). If any are blocked, the apply waits until `provider_timeout_minutes` expires.
+- The appliance must reach the cluster on TCP 8000 and NFS. The default `allow_cidrs` covers this because the VPC CIDR is always included. If you bring your own cluster security group with `cluster_security_group_id`, add these rules yourself.
+- The UI listens on TCP 443 at the appliance private IP. Add peered VPC, VPN, or Direct Connect ranges to `neuralsearch_allow_cidrs` to reach it from outside the VPC.
+
+### Cost
+
+The appliance uses a 1 TiB gp3 OS disk provisioned at 80,000 IOPS and 2,000 MiB/s. IOPS and throughput above the gp3 baseline are billed. The default instance type is m6a.4xlarge.
+
+### Access the appliance
+
+The appliance has no public IP. Open a shell through AWS Systems Manager with the `neuralsearch_instance_id` output.
+
+```bash
+aws ssm start-session --target <neuralsearch_instance_id> --region <region>
+```
+
+### First-boot wizard
+
+1. Open the `neuralsearch_ui_url` output in a browser. Expect a self-signed certificate warning.
+2. Enter the cluster REST endpoint, `https://<cluster-ip>:8000`.
+3. Enter an API key.
+4. Enter the NFS export host. The index lives in the `/.neuralsearch` export.
+5. Sign in with a cluster account that holds the Administrators or Observers role.
+
+### Limitations
+
+The `qumulo_neuralsearch_aws` resource does not support `terraform import`.
+
+---
+
 ## Terraform Documentation
 
 > ℹ️ **Note:** This repository uses documentation generated with Terraform-Docs.
@@ -95,7 +143,7 @@ output "outputs_cloud_native_qumulo" {
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.1 |
-| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.10 |
+| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.19 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
 
 ## Inputs
@@ -124,6 +172,9 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_ip_v4_or_v6"></a> [ip\_v4\_or\_v6](#input\_ip\_v4\_or\_v6) | OPTIONAL: Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider. | `string` | `"v4"` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | OPTIONAL: KMS key ARN for encrypting AWS services like EBS and S3 (immutable after creation). Qumulo encrypts all data independent of AWS default or KMS keys. | `string` | `null` | no |
 | <a name="input_networking_mode"></a> [networking\_mode](#input\_networking\_mode) | OPTIONAL: Only change this from default (host\_managed) if importing a cluster that was deployed without the Qumulo Terraform Provider.  Terraform versions prior to 7.0. | `string` | `"host_managed"` | no |
+| <a name="input_neuralsearch_allow_cidrs"></a> [neuralsearch\_allow\_cidrs](#input\_neuralsearch\_allow\_cidrs) | OPTIONAL: CIDR blocks allowed to reach the NeuralSearch UI on TCP 443. Defaults to the cluster VPC CIDR. Add peered VPC, VPN, or Direct Connect ranges here. | `list(string)` | `null` | no |
+| <a name="input_neuralsearch_instance_type"></a> [neuralsearch\_instance\_type](#input\_neuralsearch\_instance\_type) | OPTIONAL: NeuralSearch EC2 instance type. Null uses the provider default (m6a.4xlarge). | `string` | `null` | no |
+| <a name="input_neuralsearch_provision"></a> [neuralsearch\_provision](#input\_neuralsearch\_provision) | OPTIONAL: true/false to enable deployment of the NeuralSearch appliance. | `bool` | `false` | no |
 | <a name="input_nexus_api_token_or_secrets_arn"></a> [nexus\_api\_token\_or\_secrets\_arn](#input\_nexus\_api\_token\_or\_secrets\_arn) | OPTIONAL: Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token. | `string` | `null` | no |
 | <a name="input_nlb_cross_zone"></a> [nlb\_cross\_zone](#input\_nlb\_cross\_zone) | OPTIONAL: AWS NLB Enable cross-AZ load balancing | `bool` | `false` | no |
 | <a name="input_nlb_deletion_protection"></a> [nlb\_deletion\_protection](#input\_nlb\_deletion\_protection) | Enables NLB Termination protection and prevents Terraform from destroying the NLB | `bool` | `true` | no |
@@ -135,9 +186,6 @@ output "outputs_cloud_native_qumulo" {
 | <a name="input_node_count"></a> [node\_count](#input\_node\_count) | Number of nodes in the cluster. Valid values: 1 (single node), or 3-24. 1 and 4 not allowed for multi-AZ. | `number` | n/a | yes |
 | <a name="input_node_hooks_files"></a> [node\_hooks\_files](#input\_node\_hooks\_files) | OPTIONAL: Pre and post userdata hooks files for Cluster Nodes. | `map(string)` | `null` | no |
 | <a name="input_node_replacement_when_changed"></a> [node\_replacement\_when\_changed](#input\_node\_replacement\_when\_changed) | OPTIONAL: Changing the random string will trigger a node replacement with the same EC2 instance type. A typical use case would be to put in yyyy-mm-dd that you trigger a replace. | `string` | `null` | no |
-| <a name="input_np_deletion_protection"></a> [np\_deletion\_protection](#input\_np\_deletion\_protection) | OPTIONAL: Causes Terraform to throw an error upon destroy for the NeuralProtect resource.  Safegaurd your NeuralProtect instance.  Set to false to destroy. | `bool` | `true` | no |
-| <a name="input_np_instance_type"></a> [np\_instance\_type](#input\_np\_instance\_type) | OPTIONAL: NeuralProtect EC2 instance type. | `string` | `"m6a.xlarge"` | no |
-| <a name="input_np_provision"></a> [np\_provision](#input\_np\_provision) | OPTIOINAL: true/false to enable deployment of NeuralProtect. | `bool` | `false` | no |
 | <a name="input_permissions_boundary_arn"></a> [permissions\_boundary\_arn](#input\_permissions\_boundary\_arn) | OPTIONAL: IAM permissions boundary ARN applied to cluster and provisioner roles | `string` | `null` | no |
 | <a name="input_provider_timeout_minutes"></a> [provider\_timeout\_minutes](#input\_provider\_timeout\_minutes) | The total time after which Terraform will abondon the provider deployment of the Qumulo cluster and timeout. In minutes. | `number` | `30` | no |
 | <a name="input_provisioner_hooks_files"></a> [provisioner\_hooks\_files](#input\_provisioner\_hooks\_files) | OPTIONAL: Pre and post userdata hooks files for the provisioner. | `map(string)` | `null` | no |
@@ -165,6 +213,9 @@ output "outputs_cloud_native_qumulo" {
 | <a name="output_deployment_unique_name"></a> [deployment\_unique\_name](#output\_deployment\_unique\_name) | Unique deployment identifier |
 | <a name="output_endpoint_ips"></a> [endpoint\_ips](#output\_endpoint\_ips) | Client-facing IPs. Floating IPs if configured, otherwise primary IPs. |
 | <a name="output_endpoints"></a> [endpoints](#output\_endpoints) | Connection endpoints for various protocols |
+| <a name="output_neuralsearch_instance_id"></a> [neuralsearch\_instance\_id](#output\_neuralsearch\_instance\_id) | EC2 instance ID of the NeuralSearch appliance. Use with aws ssm start-session --target. Null when NeuralSearch is not provisioned. |
+| <a name="output_neuralsearch_private_ip"></a> [neuralsearch\_private\_ip](#output\_neuralsearch\_private\_ip) | Private IP address of the NeuralSearch appliance. Null when NeuralSearch is not provisioned. |
+| <a name="output_neuralsearch_ui_url"></a> [neuralsearch\_ui\_url](#output\_neuralsearch\_ui\_url) | URL of the NeuralSearch web UI. Null when NeuralSearch is not provisioned. |
 | <a name="output_primary_ips"></a> [primary\_ips](#output\_primary\_ips) | Per-node primary IPs. Use these directly when no floating IPs are configured, or for per-node access. |
 | <a name="output_provisioner_log"></a> [provisioner\_log](#output\_provisioner\_log) | CloudWatch Log for the provisioner |
 

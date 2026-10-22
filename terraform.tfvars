@@ -139,3 +139,21 @@ nlb_override_subnet_ids = null
 nlb_provision           = false
 nlb_public              = false
 nlb_stickiness          = true
+
+# ***** OPTIONAL NeuralSearch Appliance *****
+# ----- Deploys a single EC2 VM running Qumulo NeuralSearch in the cluster VPC and first subnet. The web UI is served on TCP 443 at the appliance private IP.
+#
+# The appliance subnet needs outbound HTTPS (for example through a NAT gateway) to the following endpoints. Without them the apply waits until the provider timeout.
+#   qumulo-neuralsearch.s3.us-west-2.amazonaws.com, get.docker.com, download.docker.com, public.ecr.aws, Ubuntu package mirrors,
+#   and ssm.<region>.amazonaws.com (or an SSM interface endpoint).
+# The appliance must reach the cluster on TCP 8000 and NFS. The default allow_cidrs covers this because the VPC CIDR is always included.
+# This is not automatic if you bring your own cluster security group (cluster_security_group_id).
+# Deletion protection follows deletion_protection.
+#
+# neuralsearch_allow_cidrs        - CIDR blocks allowed to reach the NeuralSearch UI on TCP 443.  Default = null, which allows the cluster VPC CIDR.
+#                                       Add peered VPC, VPN, or Direct Connect ranges here.
+# neuralsearch_instance_type      - EC2 instance type.  Default = null, which uses the provider default (m6a.4xlarge).
+# neuralsearch_provision          - true/false to enable deployment of NeuralSearch.  Default = false.
+neuralsearch_allow_cidrs   = null
+neuralsearch_instance_type = null
+neuralsearch_provision     = false
