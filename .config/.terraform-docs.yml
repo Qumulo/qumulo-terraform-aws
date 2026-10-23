@@ -32,6 +32,93 @@ content: |-
   {{ include "examples/standard.tf" }}
   ```
   
+  ## NeuralSearch (optional)
+
+  NeuralSearch is a Qumulo appliance that indexes the files on your cluster and serves a search UI. This module deploys it as a single EC2 VM in the cluster VPC and first subnet. It is off by default. The module uses the `qumulo_neuralsearch_aws` provider resource, which requires Qumulo provider 1.4.19 or later.
+
+  ### Enable NeuralSearch
+
+  Set these variables in `terraform.tfvars` or in your module block.
+
+  ```hcl
+  ns_provision     = true
+  ns_allow_cidrs   = null # CIDR blocks allowed to reach the UI on TCP 443. Null allows the cluster VPC CIDR.
+  ns_instance_type = null # Null uses the provider default (m6a.4xlarge).
+  ```
+
+  Deletion protection follows `deletion_protection` for the Qumulo Cluster.
+
+  ### Networking requirements
+
+  - The appliance subnet needs outbound HTTPS (for example through a NAT gateway) to `qumulo-neuralsearch.s3.us-west-2.amazonaws.com`, `get.docker.com`, `download.docker.com`, `public.ecr.aws`, the Ubuntu package mirrors, and `ssm.<region>.amazonaws.com` (or an SSM interface endpoint). If any are blocked, the apply waits until `provider_timeout_minutes` expires.
+  - The appliance must reach the cluster on TCP 8000 and NFS. The default `allow_cidrs` covers this because the VPC CIDR is always included. If you bring your own cluster security group with `cluster_security_group_id`, add these rules yourself.
+  - The UI listens on TCP 443 at the appliance private IP. Add peered VPC, VPN, or Direct Connect ranges to `neuralsearch_allow_cidrs` to reach it from outside the VPC.
+
+  ### First-boot wizard
+
+  1. Open the `neuralsearch_ui_url` output in a browser. Expect a self-signed certificate warning.
+  2. For SAZ clusters enter either a floating IP or the DNS name.  For MAZ clusters enter the NLB DNS name.
+  3. Sign in with a cluster account that holds the Administrators or Observers role.
+
+  ### Access the appliance
+
+  The appliance has no public IP. Open a shell through AWS Systems Manager with the `neuralsearch_instance_id` output.
+
+  ```bash
+  aws ssm start-session --target <neuralsearch_instance_id> --region <region>
+  ```
+
+  ### Cost
+
+  The appliance uses a 1 TiB gp3 OS disk provisioned at 80,000 IOPS and 2,000 MiB/s. IOPS and throughput above the gp3 baseline are billed. The default instance type is m6a.4xlarge.
+
+  ### Limitations
+
+  The `qumulo_neuralsearch_aws` resource does not support `terraform import`.
+
+  ---
+
+  ## NeuralProtect (Optional)
+
+  Deploys a Qumulo NeuralProtect appliance alongside an existing Qumulo cluster on AWS.
+
+  ### Bootstrap and network prerequisites
+
+  First-boot bootstrap always runs `apt-get update` and `dist-upgrade` from the cloud provider's Ubuntu archive mirrors. Bootstrap tools (`curl`, `gnupg`, and cloud-specific extras) and Docker (>= 20.10, `docker-ce` or `docker.io`) are installed only when missing; pre-baked images that already include them skip those apt steps. When Docker is not already on the VM image, bootstrap tries `docker.io` from those mirrors first and falls back to Docker CE from the **Nexus artifacts proxy** (`<nexus-api>/artifacts/docker/`) when public apt is blocked.
+
+  The Elastio `.deb` is fetched from the **Nexus artifacts proxy** for your Qumulo Nexus environment (for example `https://api.nexus.qumulo.com/artifacts/elastio/...`). The provider resolves `package_url` from that proxy when omitted. Explicit `package_url` values must be served from that proxy path unless `bootstrap_allow_public_internet` is set; public URLs (for example direct object-store links) are rejected at plan time when locked down.
+
+  The Threat Detection VM needs outbound HTTPS to your Qumulo Nexus API (artifacts proxy, fleet-service license channel, and appliance registration) and to your cloud provider APIs.
+
+  Custom or hardened images must include `curl`, `gnupg`, and `python3` (installed from apt by default). Bootstrap reads the cluster bearer from the dedicated TD Secrets Manager secret via the instance profile (IMDSv2 credentials + `curl --aws-sigv4` and `python3`, installed from the cloud provider's Ubuntu archive during bootstrap). Missing Elastio package dependencies may be satisfied from the image's Ubuntu apt sources during `dpkg` install.
+
+  ### Example Usage
+
+  ```hcl
+  np_deletion_protection = true
+  np_instance_type       = "m6a.4xlarge"
+  np_provision           = true
+  ```
+  ### Accessing the NeuralProtect Dashboard
+
+  The NeuralProtect dashboard and configuration options are accessed via Qumulo Nexus.  Select your cluster and then choose the Threat Detection Tab.
+
+  ### Accessing the NeuralProtect VM
+
+  The TD VM has no public IP and no inbound rules from the Internet. Operators reach it via AWS Systems Manager Session Manager — the AWS parallel to Azure AD SSH. The instance role grants the `AmazonSSMManagedInstanceCore` managed policy so the SSM agent can register on first boot. No SSH key is required.
+
+  Connect with:
+
+  ```sh
+  aws ssm start-session --target <instance-id> --region <region>
+  ```
+
+  ### Deletion Protection
+
+  Set `np_deletion_protection = true` to protect the appliance EC2 instance with termination protection (`DisableApiTermination`). Deleting a protected appliance is a deliberate two-step: set `np_deletion_protection = false`, run `terraform apply`, then run `terraform destroy`. Running destroy without the intermediate apply is refused, because the gate reads the prior state.
+
+  **Replacement interaction:** most of this resource's attributes (for example `os_disk_size_gb`) force replacement, and a replacement starts with a delete — so any replace-triggering change on a protected appliance is refused by the same gate. It takes **two separate applies**: first apply `deletion_protection = false` alone, then apply the replacing change. Combining both in one apply still fails because the replacement's delete reads the prior (protected) state. `create_before_destroy` does not avoid this: appliance resource names are deterministic from the cluster UUID, so a replacement instance cannot coexist with the protected one. This is intentional — a protected appliance cannot be silently recreated.
+
   ---
   
   ## Terraform Documentation

@@ -55,19 +55,19 @@ output "endpoints" {
   }
 }
 
-output "neuralsearch_instance_id" {
-  description = "EC2 instance ID of the NeuralSearch appliance. Use with aws ssm start-session --target. Null when NeuralSearch is not provisioned."
-  value       = one(qumulo_neuralsearch_aws.search[*].instance_id)
+output "neuralprotect_private_ip" {
+  description = "IP address for the NeuralProtect appliance."
+  value       = one(qumulo_threat_detection_aws.neuralprotect[*].private_ip)
 }
 
 output "neuralsearch_private_ip" {
   description = "Private IP address of the NeuralSearch appliance. Null when NeuralSearch is not provisioned."
-  value       = one(qumulo_neuralsearch_aws.search[*].private_ip)
+  value       = one(qumulo_neuralsearch_aws.neuralsearch[*].private_ip)
 }
 
 output "neuralsearch_ui_url" {
   description = "URL of the NeuralSearch web UI. Null when NeuralSearch is not provisioned."
-  value       = one(qumulo_neuralsearch_aws.search[*].ui_url)
+  value       = one(qumulo_neuralsearch_aws.neuralsearch[*].ui_url)
 }
 
 output "primary_ips" {
@@ -79,3 +79,4 @@ output "provisioner_log" {
   description = "CloudWatch Log for the provisioner"
   value       = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#logsV2:log-groups/log-group/$252Fqumulo$252F${qumulo_filesystem_aws.cluster.deployment_unique_name}$252Fprovisioner"
 }
+
