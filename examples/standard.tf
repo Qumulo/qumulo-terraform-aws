@@ -1,5 +1,5 @@
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v7.6"
+  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v7.8"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -17,9 +17,6 @@ module "cloud_native_qumulo" {
   cluster_iam_role_arn          = null
   cluster_security_group_id     = null
   kms_key_id                    = null
-  neuralsearch_allow_cidrs      = null
-  neuralsearch_instance_type    = null
-  neuralsearch_provision        = false
   permissions_boundary_arn      = null
   provisioner_iam_role_arn      = null
   provisioner_instance_type     = null

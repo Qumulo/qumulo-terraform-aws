@@ -38,4 +38,6 @@ provider "qumulo" {
     # instance profile). No credentials block is required here.
     # profile   = "my-profile"   # optional, overrides AWS_PROFILE
   }
+  nexus_api_token      = module.secrets.resolved_token
+  cluster_stall_window = "${tostring(var.cluster_stall_window_minutes)}m"
 }

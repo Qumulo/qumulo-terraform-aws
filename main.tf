@@ -20,7 +20,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 #SOFTWARE.
 
-# **** Version 7.7 ****
+# **** Version 7.8 ****
 
 data "aws_vpc" "selected" {
   id = var.vpc_id
@@ -55,6 +55,7 @@ locals {
 
   #Logic to decide when to provision the R53 Resolver
   provision_resolver = var.r53_second_subnet_id == null || var.cluster_fqdn == null || local.provision_nlb ? false : true
+
 }
 
 #Check for S3 Gateway in VPC
@@ -151,11 +152,11 @@ module "route53-resolver" {
   vpc_id                 = var.vpc_id
 }
 
-##This module creates an AWS NLB in front of the Qumulo cluster for load distribution and fault tolerance.
-##Floating IPs are disabled when using this module because DNS is no longer used for load distribution
-##and floating IPs are no longer relevant for IP failover.  NLBs cost more $ and NFSv3 locking is not
-##reliable through an NLB.  An NLB is optional for single AZ deployments and mandatory for multi-AZ
-##deployments.
+#This module creates an AWS NLB in front of the Qumulo cluster for load distribution and fault tolerance.
+#Floating IPs are disabled when using this module because DNS is no longer used for load distribution
+#and floating IPs are no longer relevant for IP failover.  NLBs cost more $ and NFSv3 locking is not
+#reliable through an NLB.  An NLB is optional for single AZ deployments and mandatory for multi-AZ
+#deployments.
 module "nlb" {
   count = local.provision_nlb ? 1 : 0
 
@@ -178,4 +179,55 @@ module "nlb" {
   subnet_ids                       = var.subnet_ids
   tags                             = var.tags
   vpc_id                           = var.vpc_id
+}
+
+#This resource builds the optional Qumulo NeuralProtect appliance for realtime ransomware dectection.
+#It is a single EC2 VM deployed in the cluster's VPC and first subnet.
+#The dashboard and configuration are accessed via Qumulo Nexus under the Threat Detection tab.
+#The appliance needs outbound HTTPS at first boot to download and install its software.
+
+resource "qumulo_threat_detection_aws" "neuralprotect" {
+  count = var.np_provision ? 1 : 0
+
+  provider = qumulo
+
+  additional_security_group_ids = var.additional_security_group_ids
+  allow_cidrs                   = var.allow_cidrs
+  cluster_admin_password        = module.secrets.resolved_password
+  cluster_api_dns_name          = local.provision_nlb ? module.nlb[0].dns : (local.provision_resolver ? module.route53-resolver[0].dns : null)
+  cluster_reference             = qumulo_filesystem_aws.cluster.cluster_reference
+  deletion_protection           = var.np_deletion_protection
+  instance_type                 = var.np_instance_type
+  kms_key_id                    = var.kms_key_id
+  td_admin_password             = module.secrets.resolved_password
+  tags                          = var.tags
+
+  timeouts {
+    create = "${tostring(var.provider_timeout_minutes)}m"
+    delete = "${tostring(var.provider_timeout_minutes)}m"
+    update = "${tostring(var.provider_timeout_minutes)}m"
+  }
+}
+
+#This resource builds the optional Qumulo NeuralSearch appliance.
+#It is a single EC2 VM deployed in the cluster's VPC and first subnet.
+#The web UI is served on TCP 443 at the appliance private IP.
+#The appliance needs outbound HTTPS at first boot to download and install its software.
+resource "qumulo_neuralsearch_aws" "neuralsearch" {
+  count = var.ns_provision ? 1 : 0
+
+  provider = qumulo
+
+  allow_cidrs         = var.ns_allow_cidrs
+  cluster_reference   = qumulo_filesystem_aws.cluster.cluster_reference
+  deletion_protection = var.deletion_protection
+  ec2_key_pair        = var.ec2_key_pair
+  instance_type       = var.ns_instance_type
+  tags                = var.tags
+
+  timeouts {
+    create = "${tostring(var.provider_timeout_minutes)}m"
+    delete = "${tostring(var.provider_timeout_minutes)}m"
+    update = "${tostring(var.provider_timeout_minutes)}m"
+  }
 }
