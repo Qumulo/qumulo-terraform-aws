@@ -211,11 +211,9 @@ variable "networking_mode" {
 }
 
 variable "nexus_api_token_or_secrets_arn" {
-  description = "OPTIONAL: Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token."
+  description = "Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token."
   type        = string
   sensitive   = true
-  default     = null
-  nullable    = true
 
   validation {
     condition = (

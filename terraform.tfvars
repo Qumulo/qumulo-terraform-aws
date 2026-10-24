@@ -54,41 +54,41 @@ tags = {
 }
 
 # ***** Qumulo Cluster Variables ******
-# admin_pwd_or_secrets_arn       - The password may be provided as text OR may be pulled from AWS Secrets Manager by referencing the ARN.  Admin password requirements:
+# admin_pwd_or_secrets_arn       - The password may be provided as text OR may be pulled from AWS Secrets Manager by referencing the ARN.  When creating a secret the key is: password. Admin password requirements:
 #                                   8-128 characters long containing at least one uppercase letter, one lowercase letter, and one number or special character. Sensitive -- not stored in Terraform state.
 # cluster_name                   - Cluster name (2-15 alphanumeric characters). Dash (-) is allowed if not the first or last character. Used as a prefix for AWS resources created for this cluster.
 # cluster_product_type           - Cluster storage product type (immutable after creation). HOT: Optimized for frequently accessed data. COLD: Optimized for archival/infrequently accessed data.
 # deletion_protection            - Causes Terraform to throw an error upon destroy for the Qumulo Cluster resource.  Safegaurd your cluster.  Default = true.  Set to false to destroy.
+# nexus_api_token_or_secrets_arn - Qumulo Nexus API token to register with Nexus. Obtain from https://nexus.qumulo.com/user/tokens. When creating a secret the key is: token
 # node_count                     - Number of nodes in the cluster. Valid values: 1 (single node), or 3-24. 1 and 4 not allowed for multi-AZ.
 # audit_logging                  - (OPTIONAL) Send Qumulo audit logs to AWS CloudWatch logs.
 # cluster_stall_window_minutes   - (OPTIONAL) The time after which Terraform will abondon the provider deployment if the Qumulo cluster is not progressing with the deployment. Default is 20 minutes.
 # cluster_version                - (OPTIONAL) Qumulo software version. Defaults to latest. Immutable after creation. Upgrade version via cluster UI/API.
 # floating_ip_count              - (OPTIONAL) Number of floating IPs. Must be 0, or between 3 and 100. Default=12. NOT applicable with multi-AZ deployments.  
 # ip_v4_or_v6                    - (OPTIONAL) Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider.
-# nexus_api_token_or_secrets_arn - (OPTIONAL) Qumulo Nexus API token to register with Nexus. Obtain from https://nexus.qumulo.com/user/tokens
 # node_replacement_when_changed  - (OPTIONAL) Changing the random string will trigger a node replacement with the same EC2 instance type. A typical use case would be to put in yyyy-mm-dd that you trigger a replace.
 # provider_timeout_minutes       - (OPTIONAL) The total time, in minutes, after which Terraform will abondon the provider deployment of the Qumulo cluster and timeout. Default is 30 minutes.
 # soft_capacity_limit_tb         - (OPTIONAL) Soft capacity limit in TB (50 to 50000). Default is 500TB. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed.
 # storage_class                  - (OPTIONAL) HOT cluster default is INTELLIGENT_TIERING or override to STANDARD, COLD cluster default is GLACIER_IR or override to STANDARD_IA
 
 #-----------REQUIRED-------------------
-admin_pwd_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
-cluster_name             = "CNQ-HOT"
-cluster_product_type     = "HOT"
-deletion_protection      = true
-node_count               = 3
+admin_pwd_or_secrets_arn       = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
+cluster_name                   = "CNQ-HOT"
+cluster_product_type           = "HOT"
+deletion_protection            = true
+nexus_api_token_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
+node_count                     = 3
 
 #------------OPTIONAL------------------
-audit_logging                  = false
-cluster_stall_window_minutes   = 20
-cluster_version                = null
-floating_ip_count              = 12
-ip_v4_or_v6                    = "v4"
-nexus_api_token_or_secrets_arn = null
-node_replacement_when_changed  = null
-provider_timeout_minutes       = 30
-soft_capacity_limit_tb         = null
-storage_class                  = null
+audit_logging                 = false
+cluster_stall_window_minutes  = 20
+cluster_version               = null
+floating_ip_count             = 12
+ip_v4_or_v6                   = "v4"
+node_replacement_when_changed = null
+provider_timeout_minutes      = 30
+soft_capacity_limit_tb        = null
+storage_class                 = null
 
 # ***** Miscellaneous Variables *******
 # If userdata needs to be completely overridden contact support@qumulo.com or your Qumulo SE/SA.  Typically most needs can be accomodated with these pre/post hooks. Hooks look in the /hook directory for the file.

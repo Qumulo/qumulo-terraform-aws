@@ -62,6 +62,7 @@ module "cloud_native_qumulo" {
   cluster_name             = "CNQ-HOT"
   cluster_product_type     = "HOT"
   deletion_protection      = true
+  nexus_api_token_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
   node_count               = 3
 
   #------------OPTIONAL------------------
@@ -70,7 +71,6 @@ module "cloud_native_qumulo" {
   cluster_version                = null
   floating_ip_count              = 12
   ip_v4_or_v6                    = "v4"
-  nexus_api_token_or_secrets_arn = null
   node_replacement_when_changed  = null
   provider_timeout_minutes       = 30
   soft_capacity_limit_tb         = null
@@ -84,7 +84,7 @@ output "outputs_cloud_native_qumulo" {
 
 ## NeuralSearch (optional)
 
-NeuralSearch is a Qumulo appliance that indexes the files on your cluster and serves a search UI. This module deploys it as a single EC2 VM in the cluster VPC and first subnet. It is off by default. The module uses the `qumulo_neuralsearch_aws` provider resource, which requires Qumulo provider 1.4.19 or later.
+NeuralSearch is a Qumulo appliance that indexes the files on your cluster and serves a search UI. This module deploys it as a single EC2 VM in the cluster VPC and first subnet. It is off by default. The module uses the `qumulo_neuralsearch_aws` provider resource, which requires Qumulo provider 1.4.25 or later.
 
 ### Enable NeuralSearch
 
@@ -182,7 +182,7 @@ Set `np_deletion_protection = true` to protect the appliance EC2 instance with t
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.1 |
-| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.19 |
+| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.23 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
 
 ## Inputs
@@ -211,7 +211,7 @@ Set `np_deletion_protection = true` to protect the appliance EC2 instance with t
 | <a name="input_ip_v4_or_v6"></a> [ip\_v4\_or\_v6](#input\_ip\_v4\_or\_v6) | OPTIONAL: Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider. | `string` | `"v4"` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | OPTIONAL: KMS key ARN for encrypting AWS services like EBS and S3 (immutable after creation). Qumulo encrypts all data independent of AWS default or KMS keys. | `string` | `null` | no |
 | <a name="input_networking_mode"></a> [networking\_mode](#input\_networking\_mode) | OPTIONAL: Only change this from default (host\_managed) if importing a cluster that was deployed without the Qumulo Terraform Provider.  Terraform versions prior to 7.0. | `string` | `"host_managed"` | no |
-| <a name="input_nexus_api_token_or_secrets_arn"></a> [nexus\_api\_token\_or\_secrets\_arn](#input\_nexus\_api\_token\_or\_secrets\_arn) | OPTIONAL: Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token. | `string` | `null` | no |
+| <a name="input_nexus_api_token_or_secrets_arn"></a> [nexus\_api\_token\_or\_secrets\_arn](#input\_nexus\_api\_token\_or\_secrets\_arn) | Provide either a plaintext Nexus API token or an AWS Secrets Manager ARN for the token. | `string` | n/a | yes |
 | <a name="input_nlb_cross_zone"></a> [nlb\_cross\_zone](#input\_nlb\_cross\_zone) | OPTIONAL: AWS NLB Enable cross-AZ load balancing | `bool` | `false` | no |
 | <a name="input_nlb_deletion_protection"></a> [nlb\_deletion\_protection](#input\_nlb\_deletion\_protection) | Enables NLB Termination protection and prevents Terraform from destroying the NLB | `bool` | `true` | no |
 | <a name="input_nlb_dns_client_affinity"></a> [nlb\_dns\_client\_affinity](#input\_nlb\_dns\_client\_affinity) | OPTIONAL: AWS NLB DNS Client Routing Policy Zonal Affinity | `string` | `"availability_zone_affinity"` | no |

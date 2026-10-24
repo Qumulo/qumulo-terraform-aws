@@ -37,6 +37,7 @@ module "cloud_native_qumulo" {
   cluster_name             = "CNQ-HOT"
   cluster_product_type     = "HOT"
   deletion_protection      = true
+  nexus_api_token_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
   node_count               = 3
 
   #------------OPTIONAL------------------
@@ -45,7 +46,6 @@ module "cloud_native_qumulo" {
   cluster_version                = null
   floating_ip_count              = 12
   ip_v4_or_v6                    = "v4"
-  nexus_api_token_or_secrets_arn = null
   node_replacement_when_changed  = null
   provider_timeout_minutes       = 30
   soft_capacity_limit_tb         = null
