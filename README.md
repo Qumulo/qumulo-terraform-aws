@@ -24,7 +24,7 @@ Qumulo Core >= 7.9.2.1 is required for this Terraform
 
 ```hcl
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v7.8"
+  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v8.0"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -182,7 +182,7 @@ Set `np_deletion_protection = true` to protect the appliance EC2 instance with t
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.1 |
-| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.23 |
+| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.27 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
 
 ## Inputs
@@ -239,7 +239,7 @@ Set `np_deletion_protection = true` to protect the appliance EC2 instance with t
 | <a name="input_s3_gateway_validation"></a> [s3\_gateway\_validation](#input\_s3\_gateway\_validation) | OPTIONAL: Terraform will test for an S3 gateway if this is left at null or set to true.  Set to false for environments that have complex VPC networking. | `bool` | `null` | no |
 | <a name="input_s3_log_bucket_name"></a> [s3\_log\_bucket\_name](#input\_s3\_log\_bucket\_name) | OPTIONAL: Bucket name for S3 logging | `string` | `null` | no |
 | <a name="input_s3_log_bucket_prefix"></a> [s3\_log\_bucket\_prefix](#input\_s3\_log\_bucket\_prefix) | OPTIONAL: Bucket prefix for S3 logging | `string` | `null` | no |
-| <a name="input_soft_capacity_limit_tb"></a> [soft\_capacity\_limit\_tb](#input\_soft\_capacity\_limit\_tb) | OPTIONAL: Soft capacity limit in TB (50 to 50000). Default is 500TB. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed. | `number` | `500` | no |
+| <a name="input_soft_capacity_limit_tb"></a> [soft\_capacity\_limit\_tb](#input\_soft\_capacity\_limit\_tb) | OPTIONAL: Soft capacity limit in TB (50 to 50000). Default is 2000TB per instance at first quorum formation. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed. | `number` | `null` | no |
 | <a name="input_storage_class"></a> [storage\_class](#input\_storage\_class) | HOT cluster default is INTELLIGENT\_TIERING or STANDARD, COLD cluster default is GLACIER\_IR or STANDARD\_IA | `string` | `null` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | Subnet ID for a single AZ deployment or 3+ subnets, one per AZ, for a multi-AZ deployment) | `list(string)` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | OPTIONAL: Tags to apply to all AWS resources created for this cluster. | `map(string)` | `null` | no |

@@ -20,7 +20,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 #SOFTWARE.
 
-# **** Version 7.8 ****
+# **** Version 8.0 ****
 
 data "aws_vpc" "selected" {
   id = var.vpc_id
