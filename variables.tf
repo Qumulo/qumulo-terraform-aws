@@ -428,10 +428,10 @@ variable "s3_log_bucket_prefix" {
 }
 
 variable "soft_capacity_limit_tb" {
-  description = "OPTIONAL: Soft capacity limit in TB (50 to 50000). Default is 500TB. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed."
+  description = "OPTIONAL: Soft capacity limit in TB (50 to 50000). Default is 2000TB per instance at first quorum formation. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed."
   type        = number
-  default     = 500
-  nullable    = false
+  default     = null
+  nullable    = true
 }
 
 variable "storage_class" {
