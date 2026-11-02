@@ -95,9 +95,10 @@ variable "cluster_fqdn" {
   validation {
     condition = var.cluster_fqdn == null || try(
       length(var.cluster_fqdn) <= 64 &&
-      can(regex("^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$", var.cluster_fqdn)), false
+       can(regex("^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", var.cluster_fqdn)), false
+     
     )
-    error_message = "The fqdn must use lowercase, start and end with letters only, and may contain . and -"
+    error_message = "The fqdn must use lowercase, may contain . and -, but not start or end with . or -"
   }
 }
 
@@ -220,8 +221,8 @@ variable "nexus_api_token_or_secrets_arn" {
       # Option A: Valid AWS Secrets Manager ARN Format
       var.nexus_api_token_or_secrets_arn == null ? true : can(regex("^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$", var.nexus_api_token_or_secrets_arn)) ||
 
-      # Option B: Plaintext API token or null
-      length(var.nexus_api_token_or_secrets_arn) == 80
+      # Option B: Plaintext API token 
+      length(var.nexus_api_token_or_secrets_arn) >= 60
     )
     error_message = "The nexus_api_token_or_secrets_arn must be either a valid AWS Secrets Manager ARN, or an 80 character API token."
   }

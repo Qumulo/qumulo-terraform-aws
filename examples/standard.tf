@@ -1,5 +1,5 @@
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v8.0"
+  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v8.1"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -33,23 +33,23 @@ module "cloud_native_qumulo" {
 
   # ***** Qumulo Cluster Variables ******
   #-----------REQUIRED-------------------
-  admin_pwd_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
-  cluster_name             = "CNQ-HOT"
-  cluster_product_type     = "HOT"
-  deletion_protection      = true
+  admin_pwd_or_secrets_arn       = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
+  cluster_name                   = "CNQ-HOT"
+  cluster_product_type           = "HOT"
+  deletion_protection            = true
   nexus_api_token_or_secrets_arn = "arn:aws:secretsmanager:us-west-2:<aws account number>:secret:/<secret path>/<secret_name>"
-  node_count               = 3
+  node_count                     = 3
 
   #------------OPTIONAL------------------
-  audit_logging                  = false
-  cluster_stall_window_minutes   = 20
-  cluster_version                = null
-  floating_ip_count              = 12
-  ip_v4_or_v6                    = "v4"
-  node_replacement_when_changed  = null
-  provider_timeout_minutes       = 30
-  soft_capacity_limit_tb         = null
-  storage_class                  = null
+  audit_logging                 = false
+  cluster_stall_window_minutes  = 20
+  cluster_version               = null
+  floating_ip_count             = 12
+  ip_v4_or_v6                   = "v4"
+  node_replacement_when_changed = null
+  provider_timeout_minutes      = 30
+  soft_capacity_limit_tb        = null
+  storage_class                 = null
 }
 
 output "outputs_cloud_native_qumulo" {

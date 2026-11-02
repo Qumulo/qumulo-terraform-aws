@@ -68,7 +68,7 @@ tags = {
 # ip_v4_or_v6                    - (OPTIONAL) Only change this from default (v4) if connecting to the cluster via IPv6.  Not supported for clusters deployed without the Qumulo Terraform Provider.
 # node_replacement_when_changed  - (OPTIONAL) Changing the random string will trigger a node replacement with the same EC2 instance type. A typical use case would be to put in yyyy-mm-dd that you trigger a replace.
 # provider_timeout_minutes       - (OPTIONAL) The total time, in minutes, after which Terraform will abondon the provider deployment of the Qumulo cluster and timeout. Default is 30 minutes.
-# soft_capacity_limit_tb         - (OPTIONAL) Soft capacity limit in TB (50 to 50000). Default is 2000TB per instance at first quorum formation. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed."
+# soft_capacity_limit_tb         - (OPTIONAL) Cluster soft capacity limit in TB (50 to 50000). Default is 2000TB per instance at first quorum formation. Can be increased to add storage, but cannot be decreased.  It's like a quota, unused capacity is not billed."
 # storage_class                  - (OPTIONAL) HOT cluster default is INTELLIGENT_TIERING or override to STANDARD, COLD cluster default is GLACIER_IR or override to STANDARD_IA
 
 #-----------REQUIRED-------------------
