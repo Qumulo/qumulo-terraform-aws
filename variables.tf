@@ -75,10 +75,18 @@ variable "ami_parameter_name" {
     error_message = "The ami_parameter_name must be a valid Parameter Store parameter name."
   }
 }
+
 variable "audit_logging" {
   description = "OPTIONAL: Send Qumulo audit logs to AWS CloudWatch logs."
   type        = bool
   default     = false
+}
+
+variable "bucket_name_prefix" {
+  description = "OPTIONAL: User defined string to pre-pend to the bucket names."
+  type        = string
+  default     = null
+  nullable    = true
 }
 
 variable "cluster_dns_name" {
@@ -95,8 +103,8 @@ variable "cluster_fqdn" {
   validation {
     condition = var.cluster_fqdn == null || try(
       length(var.cluster_fqdn) <= 64 &&
-       can(regex("^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", var.cluster_fqdn)), false
-     
+      can(regex("^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", var.cluster_fqdn)), false
+
     )
     error_message = "The fqdn must use lowercase, may contain . and -, but not start or end with . or -"
   }

@@ -20,7 +20,7 @@
 #OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 #SOFTWARE.
 
-# **** Version 8.1 ****
+# **** Version 8.2 ****
 
 data "aws_vpc" "selected" {
   id = var.vpc_id
@@ -56,6 +56,9 @@ locals {
   #Logic to decide when to provision the R53 Resolver
   provision_resolver = var.r53_second_subnet_id == null || var.cluster_fqdn == null || local.provision_nlb ? false : true
 
+  #Logic to build allowed CIDRS lists
+  allow_cidrs_cluster = var.allow_cidrs == null ? [data.aws_vpc.selected.cidr_block] : distinct(concat([data.aws_vpc.selected.cidr_block], var.allow_cidrs))
+  allow_cidrs_ns      = var.ns_allow_cidrs == null ? [data.aws_vpc.selected.cidr_block]  : distinct(concat([data.aws_vpc.selected.cidr_block], var.ns_allow_cidrs))
 }
 
 #Check for S3 Gateway in VPC
@@ -80,9 +83,10 @@ resource "qumulo_filesystem_aws" "cluster" {
 
   additional_security_group_ids = var.additional_security_group_ids
   admin_password                = module.secrets.resolved_password
-  allow_cidrs                   = var.allow_cidrs == null ? [data.aws_vpc.selected.cidr_block] : concat([data.aws_vpc.selected.cidr_block], var.allow_cidrs)
+  allow_cidrs                   = local.allow_cidrs_cluster
   ami_id                        = local.ami_id
   audit_logging                 = var.audit_logging
+  bucket_prefix                 = var.bucket_name_prefix == null ? null : "${var.bucket_name_prefix}-"
   cluster_iam_role_arn          = var.cluster_iam_role_arn
   cluster_fqdn                  = var.cluster_fqdn
   cluster_name                  = var.cluster_name
@@ -192,7 +196,7 @@ resource "qumulo_threat_detection_aws" "neuralprotect" {
   provider = qumulo
 
   additional_security_group_ids = var.additional_security_group_ids
-  allow_cidrs                   = var.allow_cidrs
+  allow_cidrs                   = local.allow_cidrs_cluster
   cluster_admin_password        = module.secrets.resolved_password
   cluster_api_dns_name          = local.provision_nlb ? module.nlb[0].dns : (local.provision_resolver ? module.route53-resolver[0].dns : null)
   cluster_reference             = qumulo_filesystem_aws.cluster.cluster_reference
@@ -218,7 +222,7 @@ resource "qumulo_neuralsearch_aws" "neuralsearch" {
 
   provider = qumulo
 
-  allow_cidrs         = var.ns_allow_cidrs
+  allow_cidrs         = local.allow_cidrs_ns
   cluster_reference   = qumulo_filesystem_aws.cluster.cluster_reference
   deletion_protection = var.deletion_protection
   ec2_key_pair        = var.ec2_key_pair

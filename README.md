@@ -24,7 +24,7 @@ Qumulo Core >= 7.9.2.1 is required for this Terraform
 
 ```hcl
 module "cloud_native_qumulo" {
-  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v8.1"
+  source = "git::https://github.com/Qumulo/qumulo-terraform-aws.git?ref=v8.2"
   # ****************************** QUMULO PROVIDER VARIABLES ********************
   #-----------REQUIRED-------------------
   deployment_name = "my-deployment-name"
@@ -182,7 +182,7 @@ Set `np_deletion_protection = true` to protect the appliance EC2 instance with t
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.11.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.32 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.1 |
-| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.27 |
+| <a name="requirement_qumulo"></a> [qumulo](#requirement\_qumulo) | >= 1.4.33 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
 
 ## Inputs
@@ -195,6 +195,7 @@ Set `np_deletion_protection = true` to protect the appliance EC2 instance with t
 | <a name="input_ami_id"></a> [ami\_id](#input\_ami\_id) | OPTIONAL: AMI ID for cluster nodes. If omitted, the default Qumulo AMI (Ubuntu 24.04) is used. Supports Ubuntu and RHEL 8, 9, and 10 AMIs. See aws-custom-images.md for details. | `string` | `null` | no |
 | <a name="input_ami_parameter_name"></a> [ami\_parameter\_name](#input\_ami\_parameter\_name) | OPTIONAL: AWS Systems Manager Parameter Store parameter name to lookup the AMI. Takes priority over ami\_id if provided. | `string` | `null` | no |
 | <a name="input_audit_logging"></a> [audit\_logging](#input\_audit\_logging) | OPTIONAL: Send Qumulo audit logs to AWS CloudWatch logs. | `bool` | `false` | no |
+| <a name="input_bucket_name_prefix"></a> [bucket\_name\_prefix](#input\_bucket\_name\_prefix) | OPTIONAL: User defined string to pre-pend to the bucket names. | `string` | `null` | no |
 | <a name="input_cluster_dns_name"></a> [cluster\_dns\_name](#input\_cluster\_dns\_name) | OPTIONAL: DNS Name for the cluster.  Leave null to automatically pickup the QDNS or NLB DNS name. | `string` | `null` | no |
 | <a name="input_cluster_fqdn"></a> [cluster\_fqdn](#input\_cluster\_fqdn) | OPTIONAL: Fully qualified domain name for Qumulo DNS | `string` | `null` | no |
 | <a name="input_cluster_iam_role_arn"></a> [cluster\_iam\_role\_arn](#input\_cluster\_iam\_role\_arn) | OPTIONAL: When set, the provider performs no IAM writes for that role — no creation, policy updates, tagging, or deletion — and instead launches instances with your role's instance profile | `string` | `null` | no |
