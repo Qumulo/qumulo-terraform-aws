@@ -154,6 +154,8 @@ resource "aws_lb_listener" "port_22" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_22.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })
 }
 
 #resource "aws_lb_target_group" "port_80" {
@@ -226,6 +228,8 @@ resource "aws_lb_listener" "port_111" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_111.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
 
 resource "aws_lb_target_group" "port_443" {
@@ -262,6 +266,8 @@ resource "aws_lb_listener" "port_443" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_443.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
 
 resource "aws_lb_target_group" "port_445" {
@@ -298,6 +304,8 @@ resource "aws_lb_listener" "port_445" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_445.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
 
 resource "aws_lb_target_group" "port_2049" {
@@ -334,6 +342,8 @@ resource "aws_lb_listener" "port_2049" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_2049.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
 
 
@@ -371,6 +381,8 @@ resource "aws_lb_listener" "port_3712" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_3712.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
 
 resource "aws_lb_target_group" "port_3713" {
@@ -407,6 +419,8 @@ resource "aws_lb_listener" "port_3713" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_3713.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
 
 resource "aws_lb_target_group" "port_8000" {
@@ -443,6 +457,8 @@ resource "aws_lb_listener" "port_8000" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_8000.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
 
 resource "aws_lb_target_group" "port_9000" {
@@ -479,4 +495,6 @@ resource "aws_lb_listener" "port_9000" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.port_9000.arn
   }
+
+  tags = merge(var.tags, { Name = "${var.deployment_unique_name}" })  
 }
